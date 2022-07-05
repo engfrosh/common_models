@@ -1,5 +1,5 @@
 from django.db import models
-from manage import init_django
+from common_models.common_modules_setup import init_django
 
 init_django()
 
