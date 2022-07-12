@@ -4,6 +4,7 @@
 Some inspiration from: https://github.com/Palindrome-Puzzles/2022-hunt/blob/main/hunt/app/models.py
 """
 
+from __future__ import annotations
 
 from django.db import models
 from common_models.common_models_setup import init_django
@@ -12,6 +13,7 @@ import os
 import random
 from django.contrib.auth.models import Group
 from django.db.models.deletion import CASCADE, PROTECT
+
 
 SCAVENGER_DIR = "scavenger/"
 PUZZLE_DIR = "puzzles/"
@@ -45,11 +47,13 @@ class Puzzle(models.Model):
     puzzle_text = models.CharField("Text", blank=True, max_length=2000)
     puzzle_file = models.FileField(upload_to=puzzle_path, blank=True)
     puzzle_file_display_filename = models.CharField(max_length=256, blank=True)
+    puzzle_file_download = models.BooleanField(default=False)
+    puzzle_file_is_image = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self) -> str:
+    def __str__(self: Puzzle) -> str:
         return f"Puzzle: {self.name} [{self.id}]"
 
     class Meta:
@@ -59,6 +63,7 @@ class Puzzle(models.Model):
         permissions = [
             ("guess_scavenger_puzzle", "Can guess for scavenger puzzle")
         ]
+
 
 # endregion
 
