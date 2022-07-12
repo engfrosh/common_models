@@ -6,18 +6,32 @@ Some inspiration from: https://github.com/Palindrome-Puzzles/2022-hunt/blob/main
 
 
 from django.db import models
-from common_models.common_modules_setup import init_django
+from common_models.common_models_setup import init_django
+import string
+import os
+import random
+from django.contrib.auth.models import Group
+from django.db.models.deletion import CASCADE, PROTECT
+
+SCAVENGER_DIR = "scavenger/"
+PUZZLE_DIR = "puzzles/"
+
+FILE_RANDOM_LENGTH = 128
 
 init_django()
 
 
-class NewModel(models.Model):
+def random_path(instance, filename, base=""):
+    _, ext = os.path.splitext(filename)
+    rnd = "".join(random.choice(string.ascii_letters + string.digits) for i in range(FILE_RANDOM_LENGTH))
+    return base + rnd + ext
 
-    id = models.AutoField(primary_key=True)
-    name = models.TextField(max_length=40)
 
+def puzzle_path(instance, filename):
+    return random_path(instance, filename, SCAVENGER_DIR + PUZZLE_DIR)
 
 # region Scavenger
+
 
 class Puzzle(models.Model):
     """Puzzles in scavenger"""
@@ -25,6 +39,12 @@ class Puzzle(models.Model):
     id = models.IntegerField(unique=True, primary_key=True)
     name = models.CharField(max_length=200, unique=True)
     answer = models.CharField(max_length=100)
+
+    enabled = models.BooleanField(default=True)
+
+    puzzle_text = models.CharField("Text", blank=True, max_length=2000)
+    puzzle_file = models.FileField(upload_to=puzzle_path, blank=True)
+    puzzle_file_display_filename = models.CharField(max_length=256, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -36,4 +56,22 @@ class Puzzle(models.Model):
         verbose_name = "Scavenger Puzzle"
         verbose_name_plural = "Scavenger Puzzles"
 
+        permissions = [
+            ("guess_scavenger_puzzle", "Can guess for scavenger puzzle")
+        ]
+
 # endregion
+
+
+class Team(models.Model):
+    """Model of scavenger team."""
+
+    group = models.OneToOneField(Group, CASCADE, primary_key=True)
+    finished = models.BooleanField("Finished Scavenger", default=False)
+
+    class Meta:
+        verbose_name = "Scavenger Team"
+        verbose_name_plural = "Scavenger Teams"
+
+    def __str__(self) -> str:
+        return self.group.name
