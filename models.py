@@ -6,21 +6,22 @@ Some inspiration from: https://github.com/Palindrome-Puzzles/2022-hunt/blob/main
 
 from __future__ import annotations
 
-from django.db import models
-from common_models.common_models_setup import init_django
 import string
 import os
 import random
-from django.contrib.auth.models import Group
-from django.db.models.deletion import CASCADE, PROTECT
+
+from common_models.common_models_setup import init_django
+init_django()
+
+from django.db import models  # noqa: E402
+from django.contrib.auth.models import Group  # noqa: E402
+from django.db.models.deletion import CASCADE, PROTECT  # noqa: E402
 
 
 SCAVENGER_DIR = "scavenger/"
 PUZZLE_DIR = "puzzles/"
 
 FILE_RANDOM_LENGTH = 128
-
-init_django()
 
 
 def random_path(instance, filename, base=""):

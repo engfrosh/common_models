@@ -3,8 +3,15 @@
 
 from typing import Dict, List, Optional
 
+try:
+    from common_models.configs import INSTALLED_APPS, DATABASE
+except ModuleNotFoundError:
+    INSTALLED_APPS: Optional[List[str]] = None
+    DATABASE: Optional[Dict[str, str]] = None
 
-def init_django(installed_apps: Optional[List[str]] = None, default_database: Optional[Dict[str, str]] = None):
+
+def init_django(
+        installed_apps: Optional[List[str]] = INSTALLED_APPS, default_database: Optional[Dict[str, str]] = DATABASE):
     import django
     from django.conf import settings
 
