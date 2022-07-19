@@ -73,11 +73,106 @@ class Puzzle(models.Model):
         verbose_name_plural = "Scavenger Puzzles"
 
         permissions = [
-            ("guess_scavenger_puzzle", "Can guess for scavenger puzzle")
+            ("guess_scavenger_puzzle", "Can guess for scavenger puzzle"),
+            ("manage_scav", "Can manage scav")
         ]
 
+# class Hint(models.Model):
+#     """Scavenger Hint Model."""
+
+#     id = models.AutoField("Hint ID", primary_key=True)
+#     question = models.ForeignKey(Question, CASCADE, db_index=True)
+#     text = models.CharField("Hint Text", blank=True, max_length=2000)
+#     file = models.FileField(upload_to=hint_path, blank=True)
+#     display_filename = models.CharField(max_length=256, blank=True)
+#     weight = models.IntegerField(default=0)
+#     enabled = models.BooleanField(default=True)
+#     lockout_time = models.IntegerField("Lockout Duration in Seconds", default=900)
+#     cooldown_time = models.IntegerField("Hint Cooldown duration in Seconds", null=True, default=None)
+
+#     class Meta:
+#         """Scavenger Hints Meta info."""
+
+#         verbose_name = "Scavenger Hint"
+#         verbose_name_plural = "Scavenger Hints"
+
+#     def __str__(self):
+#         return f"{self.question} - Hint {self.weight}"
+
+
+# class QuestionTime(models.Model):
+#     id = models.AutoField(primary_key=True)
+#     # team = models.ForeignKey(Team, CASCADE)
+#     question = models.ForeignKey(Question, PROTECT)
+#     end_time = models.DateTimeField("Completed At")
+
+
+# class Settings(models.Model):
+#     id = models.AutoField(primary_key=True)
+#     name = models.CharField(max_length=32, unique=True)
+#     display_name = models.CharField(max_length=64, blank=True)
+#     enabled = models.BooleanField(default=False)
+
+#     def __str__(self) -> str:
+#         if self.display_name:
+#             return self.display_name
+#         else:
+#             return self.name
 
 # endregion
+
+# class Team(models.Model):
+#     """Representation of a scavenger team."""
+
+#     group_id = models.OneToOneField(Group, CASCADE, primary_key=True)
+    # current_question = models.ForeignKey(Question, on_delete=PROTECT, blank=True,
+    #                                      related_name="scavenger_team", null=True)
+    # locked_out_until = models.DateTimeField("Locked Out Until", blank=True, null=True)
+    # hint_cooldown_until = models.DateTimeField("Hint Cooldown Until", blank=True, null=True)
+    # last_hint = models.ForeignKey(Hint, blank=True, on_delete=PROTECT, null=True)
+    # last_hint_time = models.DateTimeField(blank=True, null=True)
+    # finished = models.BooleanField("Finished Scavenger", default=False)
+
+    # class Meta:
+    #     """Meta information for scavenger teams."""
+
+    #     verbose_name = "Scavenger Team"
+    #     verbose_name_plural = "Scavenger Teams"
+
+    # def __str__(self) -> str:
+    #     return self.group.name
+
+    # def reset_progress(self) -> None:
+    #     """Reset the team's current scavenger question to the first enabled question."""
+    #     if Question.objects.filter(enabled=True).exists():
+    #         first_question = Question.objects.filter(enabled=True).order_by("weight")[0]
+    #     else:
+    #         first_question = None
+    #     self.current_question = first_question
+    #     self.last_hint = None
+    #     self.locked_out_until = None
+    #     self.hint_cooldown_until = None
+    #     self.finished = False
+    #     self.save()
+
+    # def remove_blocks(self) -> None:
+    #     """Remove lockouts and cooldowns."""
+
+    #     self.locked_out_until = None
+    #     self.hint_cooldown_until = None
+
+    #     self.save()
+
+    # def lockout(self, duration: Optional[datetime.timedelta] = None) -> None:
+    #     """Lockout team for seconds."""
+
+    #     if duration is None:
+    #         duration = datetime.timedelta(minutes=15)
+
+    #     now = timezone.now()
+    #     until = now + duration
+    #     self.locked_out_until = until
+    #     self.save()
 
 
 class Team(models.Model):
