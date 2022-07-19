@@ -3,7 +3,7 @@
 from django.contrib import admin
 
 
-from .models import ChannelTag, DiscordChannel, DiscordOverwrite, Puzzle, Team, DiscordUser, MagicLink
+from .models import ChannelTag, DiscordBingoCards, DiscordChannel, DiscordOverwrite, FroshRole, Puzzle, Team, DiscordUser, MagicLink, UniversityProgram, UserDetails, VirtualTeam
 
 # admin.site.register([Puzzle])
 
@@ -80,3 +80,24 @@ admin.site.register(DiscordOverwrite, DiscordOverwriteAdmin)
 admin.site.register(DiscordChannel, DiscordChannelAdmin)
 admin.site.register(MagicLink, MagicLinkAdmin)
 admin.site.register(DiscordUser, DiscordUserAdmin)
+
+admin.site.register([FroshRole, UniversityProgram, VirtualTeam])
+
+
+class UserDetailsAdmin(admin.ModelAdmin):
+    """User Details Admin."""
+
+    search_fields = ('user__username', 'name')
+
+
+admin.site.register(UserDetails, UserDetailsAdmin)
+
+
+class DiscordBingoCardAdmin(admin.ModelAdmin):
+    """Discord Bingo Card Admin."""
+
+    list_display = ('bingo_card', 'discord_id')
+    search_fields = ('bingo_card', 'discord_id')
+
+
+admin.site.register(DiscordBingoCards, DiscordBingoCardAdmin)
