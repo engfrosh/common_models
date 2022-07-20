@@ -44,6 +44,17 @@ def random_path(instance, filename, base=""):
 def puzzle_path(instance, filename):
     return random_path(instance, filename, SCAVENGER_DIR + PUZZLE_DIR)
 
+# For Legacy
+# TODO: Remove
+
+
+def hint_path(instance, filename):
+    return random_path(instance, filename, SCAVENGER_DIR + "hints/")
+
+
+def question_path(instance, filename):
+    return puzzle_path(instance, filename)
+
 # region Scavenger
 
 
@@ -231,6 +242,7 @@ class FroshRole(models.Model):
     def __str__(self) -> str:
         return self.name
 
+
 class UniversityProgram(models.Model):
     """Map a role as a course program."""
 
@@ -245,6 +257,7 @@ class UniversityProgram(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
 
 class UserDetails(models.Model):
     """Details pertaining to users without fields in the default User."""
