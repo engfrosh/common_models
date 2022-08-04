@@ -5,6 +5,7 @@ Some inspiration from: https://github.com/Palindrome-Puzzles/2022-hunt/blob/main
 """
 
 from __future__ import annotations
+from collections import namedtuple
 
 import string
 import os
@@ -13,20 +14,22 @@ import datetime
 import secrets
 import logging
 
-from typing import List, Dict
-from pyaccord import DiscordAPIClient
+from typing import List, Dict, Optional
+from engfrosh_site.settings import DEFAULT_DISCORD_API_VERSION
+from pyaccord import Client
+from pyaccord.types.guild import Guild
 
 logger = logging.getLogger("common_models.models")
 
-from common_models.common_models_setup import init_django
+from common_models.common_models_setup import init_django  # noqa: E402
 init_django()
 
 from django.db import models  # noqa: E402
-from django.db.models.deletion import CASCADE, PROTECT  # noqa: E402
+from django.db.models.deletion import CASCADE  # noqa: E402
 from django.contrib.auth.models import User, Group  # noqa: E402
-from django.utils import timezone
-from django.core.exceptions import ObjectDoesNotExist
-from django.conf import settings
+from django.utils import timezone  # noqa: E402
+from django.core.exceptions import ObjectDoesNotExist  # noqa: E402
+from django.conf import settings  # noqa: E402
 
 
 SCAVENGER_DIR = "scavenger/"
@@ -311,6 +314,109 @@ class VirtualTeam(models.Model):
 
 # region Discord
 
+DiscordGuildUpdateGuildResult = namedtuple("DiscordGuildUpdatedGuildResult", [
+                                           "num_added", "num_existing_updated",
+                                           "num_existing_not_updated", "num_removed"])
+
+
+class DiscordGuild(models.Model):
+    """Refers to a discord server (guild)"""
+
+    id = models.PositiveBigIntegerField(primary_key=True)
+    name = models.CharField(max_length=200)
+    deleted = models.BooleanField(default=False)
+
+    def __init__(self, *args, pyaccord_guild: Optional[Guild] = None, **kwargs) -> None:
+        if pyaccord_guild:
+            super().__init__(*args, id=pyaccord_guild.id, name=pyaccord_guild.name, **kwargs)
+        else:
+            super().__init__(*args, **kwargs)
+
+    class Meta:
+
+        verbose_name = "Discord Guild"
+        verbose_name_plural = "Discord Guilds"
+        permissions = [
+        ]
+
+    def __str__(self) -> str:
+        if self.deleted:
+            return f"{self.name} [DELETED]"
+        else:
+            return f"{self.name}"
+
+    def __repr__(self) -> str:
+        if self.deleted:
+            return f"<Guild: {self.name} #{self.id} [DELETED]>"
+        else:
+            return f"<Guild: {self.name} #{self.id}>"
+
+    def delete_guild(self) -> None:
+        """Deletes the specified guild from discord and sets it's value to deleted."""
+
+        client = Client(settings.DISCORD_BOT_TOKEN, api_version=DEFAULT_DISCORD_API_VERSION)
+
+        client.delete_guild(self.id)
+
+        self.deleted = True
+        self.save()
+
+    @staticmethod
+    def create_new_guild(name: str) -> DiscordGuild:
+        """Creates a new guild using the discord api, saves it to the database and returns the database object."""
+
+        client = Client(settings.DISCORD_BOT_TOKEN, api_version=DEFAULT_DISCORD_API_VERSION)
+
+        pyacccord_guild = client.create_guild(name)
+
+        guild = DiscordGuild(pyaccord_guild=pyacccord_guild)
+
+        guild.save()
+
+        return guild
+
+    @staticmethod
+    def scan_and_update_guilds() -> DiscordGuildUpdateGuildResult:
+        """Returns (num_added, num_existing_updated, num_existing_not_updated, num_removed)"""
+
+        client = Client(settings.DISCORD_BOT_TOKEN, api_version=DEFAULT_DISCORD_API_VERSION)
+
+        current_guilds = client.get_current_user_guilds()
+
+        existing_guilds = DiscordGuild.objects.all()
+
+        num_added = 0
+        num_existing_updated = 0
+        num_existing_not_updated = 0
+        num_removed = 0
+
+        for g in current_guilds:
+            exg = existing_guilds.filter(id=g.id)
+            if exg.exists():
+                updated_guild: DiscordGuild = exg.first()  # type: ignore
+                if updated_guild.name != g.name:
+                    updated_guild.name = g.name
+                    updated_guild.save()
+                    num_existing_updated += 1
+                else:
+                    num_existing_not_updated += 1
+
+            else:
+                new_guild = DiscordGuild(pyaccord_guild=g)
+                new_guild.save()
+                num_added += 1
+
+        existing_ids = [g.id for g in current_guilds]
+
+        removed_guilds = existing_guilds.exclude(id__in=existing_ids)
+
+        for g in removed_guilds:
+            g.deleted = True
+            g.save()
+            num_removed += 1
+
+        return DiscordGuildUpdateGuildResult(num_added, num_existing_updated, num_existing_not_updated, num_removed)
+
 
 class Role(models.Model):
     """Relates a Django group to a discord role."""
@@ -460,7 +566,7 @@ class DiscordChannel(models.Model):
     @property
     def overwrites(self) -> List[DiscordOverwrite]:
         """Gets all the current overwrites for the channel."""
-        api = DiscordAPIClient(credentials.BOT_TOKEN, api_version=settings.DEFAULT_DISCORD_API_VERSION)
+        api = Client(settings.DISCORD_BOT_TOKEN, api_version=settings.DEFAULT_DISCORD_API_VERSION)
         raw_overwrites = api.get_channel_overwrites(self.id)
 
         overwrites = []
@@ -497,7 +603,7 @@ class DiscordChannel(models.Model):
         for k, v in overwrites.items():
             encoded_overwrites.append(v.to_encoded_dict)
 
-        api = DiscordAPIClient(credentials.BOT_TOKEN, api_version=settings.DEFAULT_DISCORD_API_VERSION)
+        api = Client(settings.DISCORD_BOT_TOKEN, api_version=settings.DEFAULT_DISCORD_API_VERSION)
         api.modify_channel_overwrites(self.id, encoded_overwrites)
 
         return True
@@ -517,7 +623,7 @@ class DiscordChannel(models.Model):
         for k, v in overwrites.items():
             encoded_overwrites.append(v.to_encoded_dict)
 
-        api = DiscordAPIClient(credentials.BOT_TOKEN, api_version=settings.DEFAULT_DISCORD_API_VERSION)
+        api = Client(settings.DISCORD_BOT_TOKEN, api_version=settings.DEFAULT_DISCORD_API_VERSION)
         api.modify_channel_overwrites(self.id, encoded_overwrites)
 
         return True

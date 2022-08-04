@@ -1,23 +1,13 @@
 """Admin site setup for common_models"""
 
+from typing import Optional, Sequence
 from django.contrib import admin
 
 
-from .models import ChannelTag, DiscordBingoCards, DiscordChannel, DiscordOverwrite, FroshRole, Puzzle, Team, DiscordUser, MagicLink, UniversityProgram, UserDetails, VirtualTeam
+from .models import ChannelTag, DiscordBingoCards, DiscordChannel, DiscordOverwrite, FroshRole, Puzzle, Team, \
+    DiscordUser, MagicLink, UniversityProgram, UserDetails, VirtualTeam, DiscordGuild
 
-# admin.site.register([Puzzle])
-
-
-class PuzzleAdmin(admin.ModelAdmin):
-    """Admin for Scavenger Puzzle"""
-
-    pass
-
-
-class TeamAdmin(admin.ModelAdmin):
-    """Admin for scavenger teams."""
-
-    pass
+# region Discord
 
 
 class DiscordRoleAdmin(admin.ModelAdmin):
@@ -66,6 +56,48 @@ class DiscordUserAdmin(admin.ModelAdmin):
     list_display = ('discord_username', 'user')
     search_fields = ('discord_username', 'user__username')
 
+# region Discord Guild
+
+
+@admin.action(description="Delete guild from discord")
+def delete_discord_guild(modeladmin, request, queryset):
+
+    for obj in queryset:
+        obj.delete_guild()
+
+
+class DiscordGuildAdmin(admin.ModelAdmin):
+
+    actions = [
+        delete_discord_guild
+    ]
+    list_display = ("name", "id", "deleted")
+    search_fields = ("name", "id")
+    ordering: Optional[Sequence[str]] = ["deleted"]
+
+
+admin.site.register(DiscordGuild, DiscordGuildAdmin)
+# endregion
+
+admin.site.register(ChannelTag, ChannelTagAdmin)
+admin.site.register(DiscordOverwrite, DiscordOverwriteAdmin)
+admin.site.register(DiscordChannel, DiscordChannelAdmin)
+admin.site.register(DiscordUser, DiscordUserAdmin)
+
+# endregion
+
+
+class PuzzleAdmin(admin.ModelAdmin):
+    """Admin for Scavenger Puzzle"""
+
+    pass
+
+
+class TeamAdmin(admin.ModelAdmin):
+    """Admin for scavenger teams."""
+
+    pass
+
 
 class MagicLinkAdmin(admin.ModelAdmin):
     """Admin for Magic Links."""
@@ -75,11 +107,7 @@ class MagicLinkAdmin(admin.ModelAdmin):
 
 admin.site.register(Puzzle, PuzzleAdmin)
 admin.site.register(Team, TeamAdmin)
-admin.site.register(ChannelTag, ChannelTagAdmin)
-admin.site.register(DiscordOverwrite, DiscordOverwriteAdmin)
-admin.site.register(DiscordChannel, DiscordChannelAdmin)
 admin.site.register(MagicLink, MagicLinkAdmin)
-admin.site.register(DiscordUser, DiscordUserAdmin)
 
 admin.site.register([FroshRole, UniversityProgram, VirtualTeam])
 
