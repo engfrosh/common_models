@@ -25,7 +25,7 @@ from common_models.common_models_setup import init_django  # noqa: E402
 init_django()
 
 from django.db import models  # noqa: E402
-from django.db.models.deletion import CASCADE  # noqa: E402
+from django.db.models.deletion import CASCADE, PROTECT  # noqa: E402
 from django.contrib.auth.models import User, Group  # noqa: E402
 from django.utils import timezone  # noqa: E402
 from django.core.exceptions import ObjectDoesNotExist  # noqa: E402
@@ -61,14 +61,31 @@ def question_path(instance, filename):
 # region Scavenger
 
 
+class PuzzleStream(models.Model):
+    """Puzzle streams in scavenger"""
+
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self) -> str:
+        return f"{self.name}"
+
+    class Meta:
+        verbose_name = "Scavenger Puzzle Stream"
+        verbose_name_plural = "Scavenger Puzzle Streams"
+
+
 class Puzzle(models.Model):
     """Puzzles in scavenger"""
 
-    id = models.IntegerField(unique=True, primary_key=True)
+    id = models.AutoField(unique=True, primary_key=True)
     name = models.CharField(max_length=200, unique=True)
     answer = models.CharField(max_length=100)
 
     enabled = models.BooleanField(default=True)
+
+    order = models.PositiveIntegerField()
+    stream = models.ForeignKey(PuzzleStream, on_delete=PROTECT)
 
     puzzle_text = models.CharField("Text", blank=True, max_length=2000)
     puzzle_file = models.FileField(upload_to=puzzle_path, blank=True)
@@ -78,6 +95,8 @@ class Puzzle(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # teams = models.ManyToManyField(Team, through="TeamPuzzleActivity")
 
     def __str__(self: Puzzle) -> str:
         return f"Puzzle: {self.name} [{self.id}]"
@@ -90,6 +109,7 @@ class Puzzle(models.Model):
             ("guess_scavenger_puzzle", "Can guess for scavenger puzzle"),
             ("manage_scav", "Can manage scav")
         ]
+
 
 # class Hint(models.Model):
 #     """Scavenger Hint Model."""
@@ -113,14 +133,6 @@ class Puzzle(models.Model):
 #     def __str__(self):
 #         return f"{self.question} - Hint {self.weight}"
 
-
-# class QuestionTime(models.Model):
-#     id = models.AutoField(primary_key=True)
-#     # team = models.ForeignKey(Team, CASCADE)
-#     question = models.ForeignKey(Question, PROTECT)
-#     end_time = models.DateTimeField("Completed At")
-
-
 # class Settings(models.Model):
 #     id = models.AutoField(primary_key=True)
 #     name = models.CharField(max_length=32, unique=True)
@@ -135,62 +147,9 @@ class Puzzle(models.Model):
 
 # endregion
 
-# class Team(models.Model):
-#     """Representation of a scavenger team."""
-
-#     group_id = models.OneToOneField(Group, CASCADE, primary_key=True)
-    # current_question = models.ForeignKey(Question, on_delete=PROTECT, blank=True,
-    #                                      related_name="scavenger_team", null=True)
-    # locked_out_until = models.DateTimeField("Locked Out Until", blank=True, null=True)
-    # hint_cooldown_until = models.DateTimeField("Hint Cooldown Until", blank=True, null=True)
-    # last_hint = models.ForeignKey(Hint, blank=True, on_delete=PROTECT, null=True)
-    # last_hint_time = models.DateTimeField(blank=True, null=True)
-    # finished = models.BooleanField("Finished Scavenger", default=False)
-
-    # class Meta:
-    #     """Meta information for scavenger teams."""
-
-    #     verbose_name = "Scavenger Team"
-    #     verbose_name_plural = "Scavenger Teams"
-
-    # def __str__(self) -> str:
-    #     return self.group.name
-
-    # def reset_progress(self) -> None:
-    #     """Reset the team's current scavenger question to the first enabled question."""
-    #     if Question.objects.filter(enabled=True).exists():
-    #         first_question = Question.objects.filter(enabled=True).order_by("weight")[0]
-    #     else:
-    #         first_question = None
-    #     self.current_question = first_question
-    #     self.last_hint = None
-    #     self.locked_out_until = None
-    #     self.hint_cooldown_until = None
-    #     self.finished = False
-    #     self.save()
-
-    # def remove_blocks(self) -> None:
-    #     """Remove lockouts and cooldowns."""
-
-    #     self.locked_out_until = None
-    #     self.hint_cooldown_until = None
-
-    #     self.save()
-
-    # def lockout(self, duration: Optional[datetime.timedelta] = None) -> None:
-    #     """Lockout team for seconds."""
-
-    #     if duration is None:
-    #         duration = datetime.timedelta(minutes=15)
-
-    #     now = timezone.now()
-    #     until = now + duration
-    #     self.locked_out_until = until
-    #     self.save()
-
 
 class Team(models.Model):
-    """Model of scavenger team."""
+    """Model of frosh team."""
 
     display_name = models.CharField("Team Name", max_length=64, unique=True)
     group = models.OneToOneField(Group, CASCADE, primary_key=True)
@@ -198,6 +157,13 @@ class Team(models.Model):
     scavenger_finished = models.BooleanField("Finished Scavenger", default=False)
     coin_amount = models.BigIntegerField("Coin Amount", default=0)
     color = models.PositiveIntegerField("Hex Color Code", null=True, blank=True, default=None)
+    puzzles = models.ManyToManyField(Puzzle, through="TeamPuzzleActivity")
+    scavenger_locked_out_until = models.DateTimeField(null=True, default=None)
+
+    # hint_cooldown_until = models.DateTimeField("Hint Cooldown Until", blank=True, null=True)
+    # last_hint = models.ForeignKey(Hint, blank=True, on_delete=PROTECT, null=True)
+    # last_hint_time = models.DateTimeField(blank=True, null=True)
+    # finished = models.BooleanField("Finished Scavenger", default=False)
 
     class Meta:
         verbose_name = "Team"
@@ -228,6 +194,59 @@ class Team(models.Model):
             return "#{:06x}".format(self.color)
         else:
             return None
+
+    def reset_progress(self):
+        """Reset the team's current scavenger question to the first enabled question."""
+        #     if Question.objects.filter(enabled=True).exists():
+        #         first_question = Question.objects.filter(enabled=True).order_by("weight")[0]
+        #     else:
+        #         first_question = None
+        #     self.current_question = first_question
+        #     self.last_hint = None
+        #     self.locked_out_until = None
+        #     self.hint_cooldown_until = None
+        #     self.finished = False
+        #     self.save()
+        raise NotImplementedError("Reset progress not implemented yet")
+
+    def remove_blocks(self):
+        """Remove lockouts and cooldowns."""
+
+        #     self.locked_out_until = None
+        #     self.hint_cooldown_until = None
+
+        #     self.save()
+        raise NotImplementedError("Remove blocks not implemented yet")
+
+    def lockout(self, duration: Optional[datetime.timedelta] = None) -> None:
+        """Lockout team for seconds."""
+
+        #     if duration is None:
+        #         duration = datetime.timedelta(minutes=15)
+
+        #     now = timezone.now()
+        #     until = now + duration
+        #     self.locked_out_until = until
+        #     self.save()
+        raise NotImplementedError("Lockout team not implemented yet")
+
+
+class TeamPuzzleActivity(models.Model):
+    """Relates teams to the puzzles they have active and have completed."""
+
+    team = models.ForeignKey(Team, on_delete=CASCADE)
+    puzzle = models.ForeignKey(Puzzle, on_delete=CASCADE)
+    puzzle_start_at = models.DateTimeField(auto_now=True)
+    puzzle_completed_at = models.DateTimeField(null=True, default=None)
+    locked_out_until = models.DateTimeField(null=True, default=None)
+
+
+class PuzzleGuess(models.Model):
+    """Stores all the guesses for scavenger."""
+
+    datetime = models.DateTimeField(auto_now=True)
+    value = models.CharField(max_length=100)
+    activity = models.ForeignKey(TeamPuzzleActivity, on_delete=CASCADE)
 
 
 class FroshRole(models.Model):
@@ -367,9 +386,9 @@ class DiscordGuild(models.Model):
 
         client = Client(settings.DISCORD_BOT_TOKEN, api_version=DEFAULT_DISCORD_API_VERSION)
 
-        pyacccord_guild = client.create_guild(name)
+        pyaccord_guild = client.create_guild(name)
 
-        guild = DiscordGuild(pyaccord_guild=pyacccord_guild)
+        guild = DiscordGuild(pyaccord_guild=pyaccord_guild)
 
         guild.save()
 

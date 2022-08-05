@@ -4,8 +4,8 @@ from typing import Optional, Sequence
 from django.contrib import admin
 
 
-from .models import ChannelTag, DiscordBingoCards, DiscordChannel, DiscordOverwrite, FroshRole, Puzzle, Team, \
-    DiscordUser, MagicLink, UniversityProgram, UserDetails, VirtualTeam, DiscordGuild
+from .models import ChannelTag, DiscordBingoCards, DiscordChannel, DiscordOverwrite, FroshRole, Puzzle, PuzzleStream, \
+    Team, DiscordUser, MagicLink, UniversityProgram, UserDetails, VirtualTeam, DiscordGuild
 
 # region Discord
 
@@ -16,6 +16,8 @@ class DiscordRoleAdmin(admin.ModelAdmin):
 
 class DiscordOverwriteAdmin(admin.ModelAdmin):
     pass
+
+# region Discord Channels & Channel Tags
 
 
 @admin.action(description="Lock Channels")
@@ -48,6 +50,7 @@ class ChannelTagAdmin(admin.ModelAdmin):
         lock_discord_channels,
         unlock_discord_channels
     ]
+# endregion
 
 
 class DiscordUserAdmin(admin.ModelAdmin):
@@ -85,6 +88,14 @@ admin.site.register(DiscordChannel, DiscordChannelAdmin)
 admin.site.register(DiscordUser, DiscordUserAdmin)
 
 # endregion
+
+
+class PuzzleStreamAdmin(admin.ModelAdmin):
+
+    pass
+
+
+admin.site.register(PuzzleStream, PuzzleStreamAdmin)
 
 
 class PuzzleAdmin(admin.ModelAdmin):
