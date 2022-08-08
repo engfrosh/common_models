@@ -5,7 +5,7 @@ from django.contrib import admin
 
 
 from .models import ChannelTag, DiscordBingoCards, DiscordChannel, DiscordOverwrite, FroshRole, Puzzle, PuzzleStream, \
-    Team, DiscordUser, MagicLink, UniversityProgram, UserDetails, VirtualTeam, DiscordGuild
+    Team, DiscordUser, MagicLink, TeamPuzzleActivity, UniversityProgram, UserDetails, VirtualTeam, DiscordGuild
 
 # region Discord
 
@@ -102,6 +102,14 @@ class PuzzleAdmin(admin.ModelAdmin):
     """Admin for Scavenger Puzzle"""
 
     pass
+
+
+class TeamPuzzleActivityAdmin(admin.ModelAdmin):
+
+    readonly_fields: Sequence[str] = ('puzzle_start_at',)
+
+
+admin.site.register(TeamPuzzleActivity, TeamPuzzleActivityAdmin)
 
 
 class TeamAdmin(admin.ModelAdmin):

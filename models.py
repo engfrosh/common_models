@@ -38,14 +38,20 @@ PUZZLE_DIR = "puzzles/"
 FILE_RANDOM_LENGTH = 128
 
 
-def random_path(instance, filename, base=""):
+def random_path(instance, filename, base="", *, length: Optional[int] = None):
+    if length is None:
+        length = FILE_RANDOM_LENGTH
     _, ext = os.path.splitext(filename)
-    rnd = "".join(random.choice(string.ascii_letters + string.digits) for i in range(FILE_RANDOM_LENGTH))
+    rnd = "".join(random.choice(string.ascii_letters + string.digits) for i in range(length))
     return base + rnd + ext
 
 
 def puzzle_path(instance, filename):
     return random_path(instance, filename, SCAVENGER_DIR + PUZZLE_DIR)
+
+
+def random_puzzle_secret_id():
+    return "".join(random.choice(string.ascii_uppercase) for i in range(64))
 
 # For Legacy
 # TODO: Remove
@@ -81,6 +87,8 @@ class Puzzle(models.Model):
     id = models.AutoField(unique=True, primary_key=True)
     name = models.CharField(max_length=200, unique=True)
     answer = models.CharField(max_length=100)
+
+    secret_id = models.CharField(max_length=64, unique=True, default=random_puzzle_secret_id)
 
     enabled = models.BooleanField(default=True)
 
@@ -151,6 +159,13 @@ class Puzzle(models.Model):
 class Team(models.Model):
     """Model of frosh team."""
 
+    # @staticmethod
+    # def initialize_all_team_scavenger_questions():
+    #     for t in Team.objects.all():
+
+    # def initialize_team_scavenger_questions():
+    #     for
+
     display_name = models.CharField("Team Name", max_length=64, unique=True)
     group = models.OneToOneField(Group, CASCADE, primary_key=True)
     scavenger_team = models.BooleanField(default=True)
@@ -158,7 +173,7 @@ class Team(models.Model):
     coin_amount = models.BigIntegerField("Coin Amount", default=0)
     color = models.PositiveIntegerField("Hex Color Code", null=True, blank=True, default=None)
     puzzles = models.ManyToManyField(Puzzle, through="TeamPuzzleActivity")
-    scavenger_locked_out_until = models.DateTimeField(null=True, default=None)
+    scavenger_locked_out_until = models.DateTimeField(blank=True, null=True, default=None)
 
     # hint_cooldown_until = models.DateTimeField("Hint Cooldown Until", blank=True, null=True)
     # last_hint = models.ForeignKey(Hint, blank=True, on_delete=PROTECT, null=True)
@@ -175,6 +190,13 @@ class Team(models.Model):
 
     def __str__(self):
         return str(self.display_name)
+
+    @staticmethod
+    def from_user(user: User) -> Optional[Team]:
+        teams = Team.objects.filter(group__in=user.groups.all())
+        if not teams:
+            return None
+        return teams[0]
 
     @property
     def to_dict(self):
@@ -194,6 +216,12 @@ class Team(models.Model):
             return "#{:06x}".format(self.color)
         else:
             return None
+
+    @property
+    def active_puzzles(self) -> List[Puzzle]:
+        active_puzzle_activities = filter(TeamPuzzleActivity._is_active,
+                                          TeamPuzzleActivity.objects.filter(team=self.group.id))
+        return [apa.puzzle for apa in active_puzzle_activities]
 
     def reset_progress(self):
         """Reset the team's current scavenger question to the first enabled question."""
@@ -237,8 +265,25 @@ class TeamPuzzleActivity(models.Model):
     team = models.ForeignKey(Team, on_delete=CASCADE)
     puzzle = models.ForeignKey(Puzzle, on_delete=CASCADE)
     puzzle_start_at = models.DateTimeField(auto_now=True)
-    puzzle_completed_at = models.DateTimeField(null=True, default=None)
-    locked_out_until = models.DateTimeField(null=True, default=None)
+    puzzle_completed_at = models.DateTimeField(null=True, blank=True, default=None)
+    locked_out_until = models.DateTimeField(null=True, blank=True, default=None)
+
+    class Meta:
+
+        verbose_name = "Team Puzzle Activity"
+        verbose_name_plural = "Team Puzzle Activities"
+
+    def __str__(self) -> str:
+        return f"{self.team.display_name} on puzzle: {self.puzzle.name}"
+
+    def _is_active(self) -> bool:
+        if self.puzzle_completed_at:
+            return False
+        return self.puzzle.enabled
+
+    @property
+    def is_active(self) -> bool:
+        return self._is_active()
 
 
 class PuzzleGuess(models.Model):
