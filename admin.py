@@ -113,9 +113,20 @@ admin.site.register(TeamPuzzleActivity, TeamPuzzleActivityAdmin)
 
 
 class TeamAdmin(admin.ModelAdmin):
-    """Admin for scavenger teams."""
+    """Admin for teams."""
 
-    pass
+    list_display = ("display_name", "scavenger_team", "scavenger_finished")
+    search_fields: Sequence[str] = ("display_name", "group")
+    actions = [
+        "reset_team_scavenger_progress"
+    ]
+    ordering: Optional[Sequence[str]] = ("scavenger_team",)
+
+    @admin.action(description="Reset team scavenger progress")
+    def reset_team_scavenger_progress(self, request, queryset):
+
+        for obj in queryset:
+            obj.reset_scavenger_progress()
 
 
 class MagicLinkAdmin(admin.ModelAdmin):

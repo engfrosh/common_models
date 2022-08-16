@@ -14,7 +14,7 @@ import datetime
 import secrets
 import logging
 
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Union
 from engfrosh_site.settings import DEFAULT_DISCORD_API_VERSION
 from pyaccord import Client
 from pyaccord.types.guild import Guild
@@ -37,6 +37,8 @@ PUZZLE_DIR = "puzzles/"
 
 FILE_RANDOM_LENGTH = 128
 
+PUZZLE_SECRET_ID_LENGTH = 16
+
 
 def random_path(instance, filename, base="", *, length: Optional[int] = None):
     if length is None:
@@ -51,7 +53,7 @@ def puzzle_path(instance, filename):
 
 
 def random_puzzle_secret_id():
-    return "".join(random.choice(string.ascii_uppercase) for i in range(64))
+    return "".join(random.choice(string.ascii_lowercase) for i in range(PUZZLE_SECRET_ID_LENGTH))
 
 # For Legacy
 # TODO: Remove
@@ -72,6 +74,7 @@ class PuzzleStream(models.Model):
 
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
+    enabled = models.BooleanField(default=True)
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -79,6 +82,21 @@ class PuzzleStream(models.Model):
     class Meta:
         verbose_name = "Scavenger Puzzle Stream"
         verbose_name_plural = "Scavenger Puzzle Streams"
+
+    @property
+    def all_enabled_puzzles(self) -> List[Puzzle]:
+        """Returns a list of enabled puzzles in order they are to be completed."""
+        return list(Puzzle.objects.filter(stream=self.id, enabled=True).order_by("order"))
+
+    @property
+    def first_enabled_puzzle(self) -> Optional[Puzzle]:
+        """Returns the first enabled puzzle for the stream if it exists."""
+        try:
+            puz = self.all_enabled_puzzles[0]
+        except IndexError:
+            return None
+
+        return puz
 
 
 class Puzzle(models.Model):
@@ -88,7 +106,7 @@ class Puzzle(models.Model):
     name = models.CharField(max_length=200, unique=True)
     answer = models.CharField(max_length=100)
 
-    secret_id = models.CharField(max_length=64, unique=True, default=random_puzzle_secret_id)
+    secret_id = models.SlugField(max_length=64, unique=True, default=random_puzzle_secret_id)
 
     enabled = models.BooleanField(default=True)
 
@@ -117,6 +135,36 @@ class Puzzle(models.Model):
             ("guess_scavenger_puzzle", "Can guess for scavenger puzzle"),
             ("manage_scav", "Can manage scav")
         ]
+
+    def is_viewable_for_team(self, team: Team) -> bool:
+        if not self.enabled:
+            return False
+        return TeamPuzzleActivity.objects.filter(puzzle=self.id, team=team.id).exists()
+
+    def is_active_for_team(self, team: Team) -> bool:
+        if not self.enabled:
+            return False
+
+        pa: Union[TeamPuzzleActivity, None] = TeamPuzzleActivity.objects.get(puzzle=self.id, team=team.id)
+        if pa:
+            return pa.is_active
+
+        else:
+            return False
+
+    def is_completed_for_team(self, team: Team) -> bool:
+        if not self.enabled:
+            return False
+
+        pa: Union[TeamPuzzleActivity, None] = TeamPuzzleActivity.objects.get(puzzle=self.id, team=team.id)
+        if pa:
+            return pa.is_completed
+
+        else:
+            return False
+
+    def _generate_qr_code(self):
+        pass
 
 
 # class Hint(models.Model):
@@ -199,6 +247,10 @@ class Team(models.Model):
         return teams[0]
 
     @property
+    def id(self) -> int:
+        return self.group.id
+
+    @property
     def to_dict(self):
         """Get the dict representation of the team."""
         return {
@@ -223,19 +275,34 @@ class Team(models.Model):
                                           TeamPuzzleActivity.objects.filter(team=self.group.id))
         return [apa.puzzle for apa in active_puzzle_activities]
 
-    def reset_progress(self):
+    @property
+    def completed_puzzles(self) -> List[Puzzle]:
+        completed_puzzle_activities = filter(TeamPuzzleActivity._is_completed,
+                                             TeamPuzzleActivity.objects.filter(team=self.group.id))
+        return [cpa for cpa in completed_puzzle_activities]
+
+    def reset_scavenger_progress(self) -> None:
         """Reset the team's current scavenger question to the first enabled question."""
-        #     if Question.objects.filter(enabled=True).exists():
-        #         first_question = Question.objects.filter(enabled=True).order_by("weight")[0]
-        #     else:
-        #         first_question = None
-        #     self.current_question = first_question
-        #     self.last_hint = None
-        #     self.locked_out_until = None
-        #     self.hint_cooldown_until = None
-        #     self.finished = False
-        #     self.save()
-        raise NotImplementedError("Reset progress not implemented yet")
+
+        # Eliminate all progress
+        TeamPuzzleActivity.objects.filter(team=self.id).delete()
+
+        # Unlock all questions
+        streams = PuzzleStream.objects.filter(enabled=True)
+
+        for s in streams:
+            puz = s.first_enabled_puzzle
+
+            if puz:
+                pa = TeamPuzzleActivity(team=self, puzzle=puz)
+
+                pa.save()
+
+        self.scavenger_finished = False
+        self.scavenger_locked_out_until = None
+        self.save()
+
+        # If hints are added they also need to be reset here
 
     def remove_blocks(self):
         """Remove lockouts and cooldowns."""
@@ -281,9 +348,18 @@ class TeamPuzzleActivity(models.Model):
             return False
         return self.puzzle.enabled
 
+    def _is_completed(self) -> bool:
+        if self.puzzle_completed_at:
+            return self.puzzle.enabled
+        return False
+
     @property
     def is_active(self) -> bool:
         return self._is_active()
+
+    @property
+    def is_completed(self) -> bool:
+        return self._is_completed()
 
 
 class PuzzleGuess(models.Model):
