@@ -14,7 +14,7 @@ import datetime
 import secrets
 import logging
 
-from typing import List, Dict, Optional, Union
+from typing import List, Dict, Optional, Tuple, Union
 from engfrosh_site.settings import DEFAULT_DISCORD_API_VERSION
 from pyaccord import Client
 from pyaccord.types.guild import Guild
@@ -162,6 +162,19 @@ class Puzzle(models.Model):
 
         else:
             return False
+
+    def check_team_guess(self, team: Team, guess: str) -> Tuple[bool, bool]:
+        """
+        Checks if a team's guess is correct. Returns True if correct, False if incorrect.
+
+        Will move team to next question if it is correct or complete scavenger if appropriate.
+        """
+
+        correct = self.answer == guess
+
+        return (correct, False)
+
+        # TODO finish
 
     def _generate_qr_code(self):
         pass
