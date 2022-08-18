@@ -101,12 +101,24 @@ admin.site.register(PuzzleStream, PuzzleStreamAdmin)
 class PuzzleAdmin(admin.ModelAdmin):
     """Admin for Scavenger Puzzle"""
 
-    pass
+    list_display = ("name", "stream", "enabled", "order", "answer")
+    search_fields = ("id", "name", "answer", "secret_id", "stream", "order", "puzzle_text")
+    ordering: Optional[Sequence[str]] = ("enabled", "stream", "order")
 
 
 class TeamPuzzleActivityAdmin(admin.ModelAdmin):
 
-    readonly_fields: Sequence[str] = ('puzzle_start_at',)
+    @admin.display(boolean=True, description="Is Active")
+    def activity_is_active(self, obj) -> bool:
+        return obj.is_active
+
+    @admin.display(boolean=True, description="Is Completed")
+    def activity_is_completed(self, obj) -> bool:
+        return obj.is_completed
+
+    readonly_fields: Sequence[str] = ('puzzle_start_at', "activity_is_active", "activity_is_completed")
+    list_display = ("team", "puzzle", "activity_is_active", "activity_is_completed",
+                    "puzzle_start_at", "puzzle_completed_at", "locked_out_until")
 
 
 admin.site.register(TeamPuzzleActivity, TeamPuzzleActivityAdmin)

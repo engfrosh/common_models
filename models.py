@@ -34,6 +34,7 @@ from django.conf import settings  # noqa: E402
 
 SCAVENGER_DIR = "scavenger/"
 PUZZLE_DIR = "puzzles/"
+PUZZLE_VERIFICATION_DIR = "scavenger/verification_photos/"
 
 FILE_RANDOM_LENGTH = 128
 
@@ -84,19 +85,24 @@ class PuzzleStream(models.Model):
         verbose_name_plural = "Scavenger Puzzle Streams"
 
     @property
+    def _all_enabled_puzzles_qs(self) -> models.QuerySet:
+        return Puzzle.objects.filter(stream=self.id, enabled=True).order_by("order")
+
+    @property
     def all_enabled_puzzles(self) -> List[Puzzle]:
         """Returns a list of enabled puzzles in order they are to be completed."""
-        return list(Puzzle.objects.filter(stream=self.id, enabled=True).order_by("order"))
+        return list(self._all_enabled_puzzles_qs)
 
     @property
     def first_enabled_puzzle(self) -> Optional[Puzzle]:
         """Returns the first enabled puzzle for the stream if it exists."""
-        try:
-            puz = self.all_enabled_puzzles[0]
-        except IndexError:
-            return None
 
-        return puz
+        return self._all_enabled_puzzles_qs.first()
+
+    def get_next_enabled_puzzle(self, puzzle: Puzzle) -> Optional[Puzzle]:
+        """Returns the next puzzle, returns None if there are no more Puzzles, ie stream completed."""
+
+        return self._all_enabled_puzzles_qs.filter(order__gt=puzzle.order).order_by("order").first()
 
 
 class Puzzle(models.Model):
@@ -104,7 +110,9 @@ class Puzzle(models.Model):
 
     id = models.AutoField(unique=True, primary_key=True)
     name = models.CharField(max_length=200, unique=True)
+
     answer = models.CharField(max_length=100)
+    require_photo_upload = models.BooleanField(default=settings.DEFAULT_SCAVENGER_PUZZLE_REQUIRE_PHOTO_UPLOAD)
 
     secret_id = models.SlugField(max_length=64, unique=True, default=random_puzzle_secret_id)
 
@@ -124,9 +132,6 @@ class Puzzle(models.Model):
 
     # teams = models.ManyToManyField(Team, through="TeamPuzzleActivity")
 
-    def __str__(self: Puzzle) -> str:
-        return f"Puzzle: {self.name} [{self.id}]"
-
     class Meta:
         verbose_name = "Scavenger Puzzle"
         verbose_name_plural = "Scavenger Puzzles"
@@ -135,6 +140,11 @@ class Puzzle(models.Model):
             ("guess_scavenger_puzzle", "Can guess for scavenger puzzle"),
             ("manage_scav", "Can manage scav")
         ]
+
+        unique_together = [["order", "stream"]]
+
+    def __str__(self: Puzzle) -> str:
+        return f"Puzzle: {self.name} [{self.id}]"
 
     def is_viewable_for_team(self, team: Team) -> bool:
         if not self.enabled:
@@ -170,11 +180,30 @@ class Puzzle(models.Model):
         Will move team to next question if it is correct or complete scavenger if appropriate.
         """
 
-        correct = self.answer == guess
+        activity = TeamPuzzleActivity.objects.get(team=team.id, puzzle=self.id)
+
+        # Create a guess object
+        PuzzleGuess(value=guess, activity=activity).save()
+
+        # Check the answer
+        correct = self.answer.lower() == guess.lower()
+
+        if not correct:
+            return (correct, False)
+
+        # Mark the question as correct
+        activity.mark_completed()
+
+        # If correct check if done scavenger and if not increment question
+        next_puzzle = self.stream.get_next_enabled_puzzle(self)
+
+        if not next_puzzle:
+            # Todo check if all streams are done and thus done scavenger
+            return (correct, True)
+
+        TeamPuzzleActivity(team=team, puzzle=next_puzzle).save()
 
         return (correct, False)
-
-        # TODO finish
 
     def _generate_qr_code(self):
         pass
@@ -353,6 +382,8 @@ class TeamPuzzleActivity(models.Model):
         verbose_name = "Team Puzzle Activity"
         verbose_name_plural = "Team Puzzle Activities"
 
+        unique_together = [["team", "puzzle"]]
+
     def __str__(self) -> str:
         return f"{self.team.display_name} on puzzle: {self.puzzle.name}"
 
@@ -365,6 +396,13 @@ class TeamPuzzleActivity(models.Model):
         if self.puzzle_completed_at:
             return self.puzzle.enabled
         return False
+
+    def mark_completed(self) -> None:
+        if self.puzzle_completed_at:
+            raise Exception("Puzzle already completed")
+
+        self.puzzle_completed_at = datetime.datetime.now()
+        self.save()
 
     @property
     def is_active(self) -> bool:
@@ -381,6 +419,18 @@ class PuzzleGuess(models.Model):
     datetime = models.DateTimeField(auto_now=True)
     value = models.CharField(max_length=100)
     activity = models.ForeignKey(TeamPuzzleActivity, on_delete=CASCADE)
+
+
+def _puzzle_verification_photo_upload_path(instance, filename) -> str:
+    return random_path(instance, filename, PUZZLE_VERIFICATION_DIR)
+
+
+class PuzzleVerificationPhoto(models.Model):
+    """Stores references to all the uploaded photos for scavenger puzzle verification."""
+
+    datetime = models.DateTimeField(auto_now=True)
+    photo = models.ImageField(upload_to=_puzzle_verification_photo_upload_path)
+    approved = models.BooleanField(default=False)
 
 
 class FroshRole(models.Model):
