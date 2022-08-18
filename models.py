@@ -173,9 +173,10 @@ class Puzzle(models.Model):
         else:
             return False
 
-    def check_team_guess(self, team: Team, guess: str) -> Tuple[bool, bool]:
+    def check_team_guess(self, team: Team, guess: str) -> Tuple[bool, bool, Optional[Puzzle]]:
         """
-        Checks if a team's guess is correct. Returns True if correct, False if incorrect.
+        Checks if a team's guess is correct. First is if correct, second if stream complete, 
+        third the new puzzle if unlocked.
 
         Will move team to next question if it is correct or complete scavenger if appropriate.
         """
@@ -189,7 +190,7 @@ class Puzzle(models.Model):
         correct = self.answer.lower() == guess.lower()
 
         if not correct:
-            return (correct, False)
+            return (correct, False, None)
 
         # Mark the question as correct
         activity.mark_completed()
@@ -198,12 +199,13 @@ class Puzzle(models.Model):
         next_puzzle = self.stream.get_next_enabled_puzzle(self)
 
         if not next_puzzle:
-            # Todo check if all streams are done and thus done scavenger
-            return (correct, True)
+            team.check_if_finished_scavenger()
+
+            return (correct, True, None)
 
         TeamPuzzleActivity(team=team, puzzle=next_puzzle).save()
 
-        return (correct, False)
+        return (correct, False, next_puzzle)
 
     def _generate_qr_code(self):
         pass
@@ -321,7 +323,7 @@ class Team(models.Model):
     def completed_puzzles(self) -> List[Puzzle]:
         completed_puzzle_activities = filter(TeamPuzzleActivity._is_completed,
                                              TeamPuzzleActivity.objects.filter(team=self.group.id))
-        return [cpa for cpa in completed_puzzle_activities]
+        return [cpa.puzzle for cpa in completed_puzzle_activities]
 
     def reset_scavenger_progress(self) -> None:
         """Reset the team's current scavenger question to the first enabled question."""
@@ -345,6 +347,24 @@ class Team(models.Model):
         self.save()
 
         # If hints are added they also need to be reset here
+
+    def check_if_finished_scavenger(self) -> bool:
+        if self.scavenger_finished:
+            return True
+
+        all_streams = PuzzleStream.objects.filter(enabled=True)
+        for stream in all_streams:
+            all_stream_puzzles = stream.all_enabled_puzzles
+            for puz in all_stream_puzzles:
+                try:
+                    if not TeamPuzzleActivity.objects.get(team=self.id, puzzle=puz.id).is_completed:
+                        return False
+                except TeamPuzzleActivity.DoesNotExist:
+                    return False
+
+        self.scavenger_finished = True
+        self.save()
+        return True
 
     def remove_blocks(self):
         """Remove lockouts and cooldowns."""
