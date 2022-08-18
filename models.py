@@ -25,7 +25,7 @@ from common_models.common_models_setup import init_django  # noqa: E402
 init_django()
 
 from django.db import models  # noqa: E402
-from django.db.models.deletion import CASCADE, PROTECT  # noqa: E402
+from django.db.models.deletion import CASCADE, PROTECT, SET_NULL  # noqa: E402
 from django.contrib.auth.models import User, Group  # noqa: E402
 from django.utils import timezone  # noqa: E402
 from django.core.exceptions import ObjectDoesNotExist  # noqa: E402
@@ -146,6 +146,12 @@ class Puzzle(models.Model):
     def __str__(self: Puzzle) -> str:
         return f"Puzzle: {self.name} [{self.id}]"
 
+    def puzzle_activity_from_team(self, team: Team) -> Optional[TeamPuzzleActivity]:
+        try:
+            return TeamPuzzleActivity.objects.get(puzzle=self.id, team=team.id)
+        except TeamPuzzleActivity.DoesNotExist:
+            return None
+
     def is_viewable_for_team(self, team: Team) -> bool:
         if not self.enabled:
             return False
@@ -173,10 +179,21 @@ class Puzzle(models.Model):
         else:
             return False
 
-    def check_team_guess(self, team: Team, guess: str) -> Tuple[bool, bool, Optional[Puzzle]]:
+    def requires_verification_photo_by_team(self, team: Team) -> bool:
+        if not self.enabled:
+            return False
+
+        pa = self.puzzle_activity_from_team(team)
+        if not pa:
+            return False
+
+        return pa.requires_verification_photo_upload
+
+
+    def check_team_guess(self, team: Team, guess: str) -> Tuple[bool, bool, Optional[Puzzle], bool]:
         """
         Checks if a team's guess is correct. First is if correct, second if stream complete, 
-        third the new puzzle if unlocked.
+        third the new puzzle if unlocked, fourth if a verification picture is required.
 
         Will move team to next question if it is correct or complete scavenger if appropriate.
         """
@@ -190,22 +207,26 @@ class Puzzle(models.Model):
         correct = self.answer.lower() == guess.lower()
 
         if not correct:
-            return (correct, False, None)
+            return (correct, False, None, False)
 
         # Mark the question as correct
         activity.mark_completed()
 
-        # If correct check if done scavenger and if not increment question
+        # If verification is required,
+        if self.require_photo_upload:
+            return (correct, False, None, True)
+
+        # Otherwise if correct check if done scavenger and if not increment question
         next_puzzle = self.stream.get_next_enabled_puzzle(self)
 
         if not next_puzzle:
             team.check_if_finished_scavenger()
 
-            return (correct, True, None)
+            return (correct, True, None, False)
 
         TeamPuzzleActivity(team=team, puzzle=next_puzzle).save()
 
-        return (correct, False, next_puzzle)
+        return (correct, False, next_puzzle, False)
 
     def _generate_qr_code(self):
         pass
@@ -388,6 +409,18 @@ class Team(models.Model):
         raise NotImplementedError("Lockout team not implemented yet")
 
 
+def _puzzle_verification_photo_upload_path(instance, filename) -> str:
+    return random_path(instance, filename, PUZZLE_VERIFICATION_DIR)
+
+
+class VerificationPhoto(models.Model):
+    """Stores references to all the uploaded photos for scavenger puzzle verification."""
+
+    datetime = models.DateTimeField(auto_now=True)
+    photo = models.ImageField(upload_to=_puzzle_verification_photo_upload_path)
+    approved = models.BooleanField(default=False)
+
+
 class TeamPuzzleActivity(models.Model):
     """Relates teams to the puzzles they have active and have completed."""
 
@@ -395,6 +428,7 @@ class TeamPuzzleActivity(models.Model):
     puzzle = models.ForeignKey(Puzzle, on_delete=CASCADE)
     puzzle_start_at = models.DateTimeField(auto_now=True)
     puzzle_completed_at = models.DateTimeField(null=True, blank=True, default=None)
+    verification_photo = models.ForeignKey(VerificationPhoto, on_delete=SET_NULL, null=True, blank=True, default=None)
     locked_out_until = models.DateTimeField(null=True, blank=True, default=None)
 
     class Meta:
@@ -417,6 +451,24 @@ class TeamPuzzleActivity(models.Model):
             return self.puzzle.enabled
         return False
 
+    def _is_verified(self) -> bool:
+        if self.verification_photo and self.verification_photo.approved or not self.puzzle.require_photo_upload:
+            return True
+
+        return False
+
+    def _is_awaiting_verification(self) -> bool:
+        if self.verification_photo and not self.verification_photo.approved:
+            return True
+
+        return False
+
+    def _requires_verification_photo_upload(self) -> bool:
+        if self.is_completed and not self.verification_photo and self.puzzle.require_photo_upload:
+            return True
+
+        return False
+
     def mark_completed(self) -> None:
         if self.puzzle_completed_at:
             raise Exception("Puzzle already completed")
@@ -432,6 +484,18 @@ class TeamPuzzleActivity(models.Model):
     def is_completed(self) -> bool:
         return self._is_completed()
 
+    @property
+    def is_verified(self) -> bool:
+        return self._is_verified()
+
+    @property
+    def is_awaiting_verification(self) -> bool:
+        return self._is_awaiting_verification()
+
+    @property
+    def requires_verification_photo_upload(self) -> bool:
+        return self._requires_verification_photo_upload()
+
 
 class PuzzleGuess(models.Model):
     """Stores all the guesses for scavenger."""
@@ -439,18 +503,6 @@ class PuzzleGuess(models.Model):
     datetime = models.DateTimeField(auto_now=True)
     value = models.CharField(max_length=100)
     activity = models.ForeignKey(TeamPuzzleActivity, on_delete=CASCADE)
-
-
-def _puzzle_verification_photo_upload_path(instance, filename) -> str:
-    return random_path(instance, filename, PUZZLE_VERIFICATION_DIR)
-
-
-class PuzzleVerificationPhoto(models.Model):
-    """Stores references to all the uploaded photos for scavenger puzzle verification."""
-
-    datetime = models.DateTimeField(auto_now=True)
-    photo = models.ImageField(upload_to=_puzzle_verification_photo_upload_path)
-    approved = models.BooleanField(default=False)
 
 
 class FroshRole(models.Model):

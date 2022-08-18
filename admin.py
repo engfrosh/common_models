@@ -5,7 +5,7 @@ from django.contrib import admin
 
 
 from .models import ChannelTag, DiscordBingoCards, DiscordChannel, DiscordOverwrite, FroshRole, Puzzle, PuzzleStream, \
-    Team, DiscordUser, MagicLink, TeamPuzzleActivity, UniversityProgram, UserDetails, VirtualTeam, DiscordGuild
+    Team, DiscordUser, MagicLink, TeamPuzzleActivity, UniversityProgram, UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild
 
 # region Discord
 
@@ -122,6 +122,14 @@ class TeamPuzzleActivityAdmin(admin.ModelAdmin):
 
 
 admin.site.register(TeamPuzzleActivity, TeamPuzzleActivityAdmin)
+
+
+class VerificationPhotoAdmin(admin.ModelAdmin):
+
+    list_display = ("datetime", "approved")
+
+
+admin.site.register(VerificationPhoto, VerificationPhotoAdmin)
 
 
 class TeamAdmin(admin.ModelAdmin):
