@@ -17,7 +17,9 @@ import logging
 from typing import List, Dict, Optional, Tuple, Union
 from engfrosh_site.settings import DEFAULT_DISCORD_API_VERSION
 from pyaccord import Client
-from pyaccord.types.guild import Guild
+from pyaccord.invite import Invite
+from pyaccord.channel import TextChannel
+from pyaccord.guild import Guild
 
 logger = logging.getLogger("common_models.models")
 
@@ -635,6 +637,20 @@ class DiscordGuild(models.Model):
 
         self.deleted = True
         self.save()
+
+    def create_invite(self, *, unique: Optional[bool] = None, max_uses: Optional[int] = None) -> Invite:
+
+        client = Client(settings.DISCORD_BOT_TOKEN, api_version=DEFAULT_DISCORD_API_VERSION)
+
+        guild = client.get_guild(self.id)
+        if not guild:
+            raise Exception("No guild exists with the id")
+
+        for ch in guild.channels:
+            if isinstance(ch, TextChannel):
+                return ch.create_invite(max_uses=max_uses, unique=unique)
+
+        raise Exception("Could not find a valid text channel to invite to.")
 
     @staticmethod
     def create_new_guild(name: str) -> DiscordGuild:
