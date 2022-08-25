@@ -6,6 +6,7 @@ Some inspiration from: https://github.com/Palindrome-Puzzles/2022-hunt/blob/main
 
 from __future__ import annotations
 from collections import namedtuple
+from io import BytesIO
 
 import string
 import os
@@ -13,13 +14,18 @@ import random
 import datetime
 import secrets
 import logging
+import qrcode
+import qrcode.image.svg
 
-from typing import List, Dict, Optional, Tuple, Union
+from typing import Iterable, List, Dict, Optional, Tuple, Union
 from engfrosh_site.settings import DEFAULT_DISCORD_API_VERSION
+
+import pyaccord
 from pyaccord import Client
 from pyaccord.invite import Invite
 from pyaccord.channel import TextChannel
 from pyaccord.guild import Guild
+from pyaccord.permissions import Permissions
 
 logger = logging.getLogger("common_models.models")
 
@@ -32,15 +38,21 @@ from django.contrib.auth.models import User, Group  # noqa: E402
 from django.utils import timezone  # noqa: E402
 from django.core.exceptions import ObjectDoesNotExist  # noqa: E402
 from django.conf import settings  # noqa: E402
+from django.core.files import File
 
 
 SCAVENGER_DIR = "scavenger/"
 PUZZLE_DIR = "puzzles/"
 PUZZLE_VERIFICATION_DIR = "scavenger/verification_photos/"
+QR_CODE_DIR = "qr_codes/"
 
 FILE_RANDOM_LENGTH = 128
 
 PUZZLE_SECRET_ID_LENGTH = 16
+
+
+def get_client() -> Client:
+    return Client(settings.DISCORD_BOT_TOKEN, api_version=DEFAULT_DISCORD_API_VERSION)
 
 
 def random_path(instance, filename, base="", *, length: Optional[int] = None):
@@ -53,6 +65,10 @@ def random_path(instance, filename, base="", *, length: Optional[int] = None):
 
 def puzzle_path(instance, filename):
     return random_path(instance, filename, SCAVENGER_DIR + PUZZLE_DIR)
+
+
+def qr_code_path(instance, filename):
+    return random_path(instance, filename, SCAVENGER_DIR + QR_CODE_DIR)
 
 
 def random_puzzle_secret_id():
@@ -123,6 +139,8 @@ class Puzzle(models.Model):
     order = models.PositiveIntegerField()
     stream = models.ForeignKey(PuzzleStream, on_delete=PROTECT)
 
+    qr_code = models.ImageField(upload_to=qr_code_path, blank=True)
+
     puzzle_text = models.CharField("Text", blank=True, max_length=2000)
     puzzle_file = models.FileField(upload_to=puzzle_path, blank=True)
     puzzle_file_display_filename = models.CharField(max_length=256, blank=True)
@@ -191,7 +209,6 @@ class Puzzle(models.Model):
 
         return pa.requires_verification_photo_upload
 
-
     def check_team_guess(self, team: Team, guess: str) -> Tuple[bool, bool, Optional[Puzzle], bool]:
         """
         Checks if a team's guess is correct. First is if correct, second if stream complete, 
@@ -230,8 +247,18 @@ class Puzzle(models.Model):
 
         return (correct, False, next_puzzle, False)
 
-    def _generate_qr_code(self):
-        pass
+    def _generate_qr_code(self) -> None:
+
+        qr = qrcode.QRCode()
+        qr.add_data(
+            "https://" + settings.ALLOWED_HOSTS[0] + "/scavenger/puzzle/" + self.secret_id + "?answer=" + self.answer)
+        qr.make(fit=True)
+
+        blob = BytesIO()
+        img = qr.make_image()
+        img.save(blob, "PNG")
+        self.qr_code.save("QRCode.png", File(blob))
+        self.save()
 
 
 # class Hint(models.Model):
@@ -651,6 +678,21 @@ class DiscordGuild(models.Model):
                 return ch.create_invite(max_uses=max_uses, unique=unique)
 
         raise Exception("Could not find a valid text channel to invite to.")
+
+    def create_role(
+            self, name: Optional[str] = None, *, permissions: Optional[Iterable[Permissions]] = None) -> pyaccord.Role:
+
+        client = get_client()
+
+        role = client.create_guild_role(self.id, name=name, permissions=permissions)
+
+        return role
+
+    def add_role_to_member(self, discord_member_id: int, discord_role: Role | int) -> None:
+
+        client = get_client()
+
+        return client.add_role_to_guild_member(self.id, discord_member_id, discord_role)
 
     @staticmethod
     def create_new_guild(name: str) -> DiscordGuild:
