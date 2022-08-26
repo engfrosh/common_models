@@ -15,7 +15,9 @@ import datetime
 import secrets
 import logging
 import qrcode
+import qrcode.constants
 import qrcode.image.svg
+from qrcode.image.styledpil import StyledPilImage
 
 from typing import Iterable, List, Dict, Optional, Tuple, Union
 from engfrosh_site.settings import DEFAULT_DISCORD_API_VERSION
@@ -249,13 +251,18 @@ class Puzzle(models.Model):
 
     def _generate_qr_code(self) -> None:
 
-        qr = qrcode.QRCode()
+        qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
         qr.add_data(
             "https://" + settings.ALLOWED_HOSTS[0] + "/scavenger/puzzle/" + self.secret_id + "?answer=" + self.answer)
         qr.make(fit=True)
 
         blob = BytesIO()
-        img = qr.make_image()
+        STYLE_IMAGE_PATH = "engfrosh_site/SpiritX.png"
+        USE_IMAGE = True
+        if USE_IMAGE:
+            img = qr.make_image(image_factory=StyledPilImage, embeded_image_path=STYLE_IMAGE_PATH)
+        else:
+            img = qr.make_image()
         img.save(blob, "PNG")
         self.qr_code.save("QRCode.png", File(blob))
         self.save()
