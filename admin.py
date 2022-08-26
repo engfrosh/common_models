@@ -4,7 +4,7 @@ from typing import Optional, Sequence
 from django.contrib import admin
 
 
-from .models import ChannelTag, DiscordBingoCards, DiscordChannel, DiscordOverwrite, FroshRole, Puzzle, PuzzleStream, \
+from .models import ChannelTag, DiscordBingoCards, DiscordChannel, DiscordOverwrite, DiscordRole, FroshRole, Puzzle, PuzzleStream, \
     Team, DiscordUser, MagicLink, TeamPuzzleActivity, UniversityProgram, UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild
 
 # region Discord
@@ -12,6 +12,9 @@ from .models import ChannelTag, DiscordBingoCards, DiscordChannel, DiscordOverwr
 
 class DiscordRoleAdmin(admin.ModelAdmin):
     pass
+
+
+admin.site.register(DiscordRole, DiscordRoleAdmin)
 
 
 class DiscordOverwriteAdmin(admin.ModelAdmin):

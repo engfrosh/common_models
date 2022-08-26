@@ -688,7 +688,7 @@ class DiscordGuild(models.Model):
 
         return role
 
-    def add_role_to_member(self, discord_member_id: int, discord_role: Role | int) -> None:
+    def add_role_to_member(self, discord_member_id: int, discord_role: DiscordRole | int) -> None:
 
         client = get_client()
 
@@ -751,7 +751,7 @@ class DiscordGuild(models.Model):
         return DiscordGuildUpdateGuildResult(num_added, num_existing_updated, num_existing_not_updated, num_removed)
 
 
-class Role(models.Model):
+class DiscordRole(models.Model):
     """Relates a Django group to a discord role."""
 
     role_id = models.PositiveBigIntegerField("Discord Role ID", primary_key=True)
@@ -815,7 +815,7 @@ class DiscordOverwrite(models.Model):
             return self.descriptive_name
         elif self.type == 0:
             try:
-                role = Role.objects.get(role_id=self.user_id)
+                role = DiscordRole.objects.get(role_id=self.user_id)
                 return f"Role Overwrite for {role.group_id.name}"
             except ObjectDoesNotExist:
                 return f"Role Overwrite: {self.user_id}"
