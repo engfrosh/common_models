@@ -138,7 +138,7 @@ class Puzzle(models.Model):
 
     enabled = models.BooleanField(default=True)
 
-    order = models.PositiveIntegerField()
+    order = models.DecimalField(max_digits=8, decimal_places=3)
     stream = models.ForeignKey(PuzzleStream, on_delete=PROTECT)
 
     qr_code = models.ImageField(upload_to=qr_code_path, blank=True)
