@@ -105,6 +105,14 @@ class PuzzleStream(models.Model):
         verbose_name_plural = "Scavenger Puzzle Streams"
 
     @property
+    def _all_puzzles_qs(self) -> models.QuerySet:
+        return Puzzle.objects.filter(stream=self.id).order_by("order")
+
+    @property
+    def all_puzzles(self) -> List[Puzzle]:
+        return list(self._all_puzzles_qs)
+
+    @property
     def _all_enabled_puzzles_qs(self) -> models.QuerySet:
         return Puzzle.objects.filter(stream=self.id, enabled=True).order_by("order")
 
@@ -304,6 +312,17 @@ class Puzzle(models.Model):
 
 # endregion
 
+class BooleanSetting(models.Model):
+    id = models.CharField(max_length=100, primary_key=True)
+    value = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = "Boolean Setting"
+        verbose_name_plural = "Boolean Settings"
+
+    def __str__(self) -> str:
+        return f"<Setting {self.id}: {self.value} >"
+
 
 class Team(models.Model):
     """Model of frosh team."""
@@ -317,12 +336,16 @@ class Team(models.Model):
 
     display_name = models.CharField("Team Name", max_length=64, unique=True)
     group = models.OneToOneField(Group, CASCADE, primary_key=True)
+
     scavenger_team = models.BooleanField(default=True)
     scavenger_finished = models.BooleanField("Finished Scavenger", default=False)
+    scavenger_locked_out_until = models.DateTimeField(blank=True, null=True, default=None)
+    scavenger_enabled_for_team = models.BooleanField(default=True)
+
+    puzzles = models.ManyToManyField(Puzzle, through="TeamPuzzleActivity")
+
     coin_amount = models.BigIntegerField("Coin Amount", default=0)
     color = models.PositiveIntegerField("Hex Color Code", null=True, blank=True, default=None)
-    puzzles = models.ManyToManyField(Puzzle, through="TeamPuzzleActivity")
-    scavenger_locked_out_until = models.DateTimeField(blank=True, null=True, default=None)
 
     # hint_cooldown_until = models.DateTimeField("Hint Cooldown Until", blank=True, null=True)
     # last_hint = models.ForeignKey(Hint, blank=True, on_delete=PROTECT, null=True)
@@ -382,6 +405,54 @@ class Team(models.Model):
                                              TeamPuzzleActivity.objects.filter(team=self.group.id))
         return [cpa.puzzle for cpa in completed_puzzle_activities]
 
+    @property
+    def verified_puzzles(self) -> List[Puzzle]:
+        verified_puzzle_activities = filter(TeamPuzzleActivity._is_verified,
+                                            TeamPuzzleActivity.objects.filter(team=self.id))
+        return [vpa.puzzle for vpa in verified_puzzle_activities]
+
+    @property
+    def completed_puzzles_awaiting_verification(self) -> List[Puzzle]:
+        return [cpav.puzzle for cpav in filter(TeamPuzzleActivity._is_awaiting_verification,
+                                               TeamPuzzleActivity.objects.filter(team=self.id))]
+
+    @property
+    def all_puzzles(self) -> List[Puzzle]:
+        return [tpa.puzzle for tpa in self.puzzle_activities]
+
+    @property
+    def _puzzle_activities_qs(self) -> models.QuerySet:
+        return TeamPuzzleActivity.objects.filter(team=self.id)
+
+    @property
+    def puzzle_activities(self) -> List[TeamPuzzleActivity]:
+        return list(self._puzzle_activities_qs)
+
+    @property
+    def completed_puzzles_requiring_photo_upload(self) -> List[Puzzle]:
+        return [pa.puzzle for pa in filter(TeamPuzzleActivity._requires_verification_photo_upload,
+                                           self.puzzle_activities)]
+
+    # @property
+    # def latest_puzzle_activities(self) -> List[TeamPuzzleActivity]:
+
+    @property
+    def scavenger_enabled(self) -> bool:
+        """Returns a bool if scav is enabled for the team."""
+
+        return BooleanSetting.objects.get_or_create(
+            id="SCAVENGER_ENABLED")[0].value and self.scavenger_enabled_for_team and self.scavenger_team
+
+    def enable_scavenger_for_team(self) -> None:
+
+        self.scavenger_enabled_for_team = True
+        self.save()
+
+    def disable_scavenger_for_team(self) -> None:
+
+        self.scavenger_enabled_for_team = False
+        self.save()
+
     def reset_scavenger_progress(self) -> None:
         """Reset the team's current scavenger question to the first enabled question."""
 
@@ -414,7 +485,7 @@ class Team(models.Model):
             all_stream_puzzles = stream.all_enabled_puzzles
             for puz in all_stream_puzzles:
                 try:
-                    if not TeamPuzzleActivity.objects.get(team=self.id, puzzle=puz.id).is_completed:
+                    if not TeamPuzzleActivity.objects.get(team=self.id, puzzle=puz.id).is_verified:
                         return False
                 except TeamPuzzleActivity.DoesNotExist:
                     return False
@@ -422,6 +493,39 @@ class Team(models.Model):
         self.scavenger_finished = True
         self.save()
         return True
+
+    def refresh_scavenger_progress(self) -> None:
+        """Moves team along if verified on a puzzle or a puzzle has been disabled."""
+
+        if self.scavenger_finished:
+            return
+
+        # Get all streams
+        streams = PuzzleStream.objects.filter(enabled=True)
+        for s in streams:
+
+            # Get puzzles in stream in reverse order
+            puzzles = s._all_puzzles_qs.reverse()
+            for puz in puzzles:
+
+                # If the team has gotten to the puzzle
+                if self._puzzle_activities_qs.filter(puzzle=puz.id).exists():
+
+                    puz_disabled = not puz.enabled
+                    puz_verified = self._puzzle_activities_qs.filter(puzzle=puz.id).first().is_verified
+
+                    # If the puzzle is now disabled or if the puzzle is now verified
+                    if puz_disabled or puz_verified:
+                        # Move team to next puzzle
+                        next_puzzle = s.get_next_enabled_puzzle(puzzle=puz)
+
+                        if not next_puzzle:
+                            if self.check_if_finished_scavenger():
+                                return
+
+                        TeamPuzzleActivity(team=self, puzzle=next_puzzle).save()
+
+        return
 
     def remove_blocks(self):
         """Remove lockouts and cooldowns."""
@@ -455,6 +559,10 @@ class VerificationPhoto(models.Model):
     datetime = models.DateTimeField(auto_now=True)
     photo = models.ImageField(upload_to=_puzzle_verification_photo_upload_path)
     approved = models.BooleanField(default=False)
+
+    def approve(self) -> None:
+        self.approved = True
+        self.save()
 
 
 class TeamPuzzleActivity(models.Model):
@@ -539,6 +647,11 @@ class PuzzleGuess(models.Model):
     datetime = models.DateTimeField(auto_now=True)
     value = models.CharField(max_length=100)
     activity = models.ForeignKey(TeamPuzzleActivity, on_delete=CASCADE)
+
+    class Meta:
+
+        verbose_name = "Puzzle Guess"
+        verbose_name_plural = "Puzzle Guesses"
 
 
 class FroshRole(models.Model):

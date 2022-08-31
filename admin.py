@@ -1,11 +1,22 @@
 """Admin site setup for common_models"""
 
-from typing import Optional, Sequence
+from typing import Iterable, Optional, Sequence
 from django.contrib import admin
 
 
-from .models import ChannelTag, DiscordBingoCards, DiscordChannel, DiscordOverwrite, DiscordRole, FroshRole, Puzzle, PuzzleStream, \
-    Team, DiscordUser, MagicLink, TeamPuzzleActivity, UniversityProgram, UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild
+from .models import BooleanSetting, ChannelTag, DiscordBingoCards, DiscordChannel, DiscordOverwrite, DiscordRole, \
+    FroshRole, Puzzle, PuzzleGuess, PuzzleStream, Team, DiscordUser, MagicLink, TeamPuzzleActivity, UniversityProgram, \
+    UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild
+
+
+class BooleanSettingAdmin(admin.ModelAdmin):
+
+    readonly_fields: Sequence[str] = ("id",)
+    list_display = ("id", "value")
+
+
+admin.site.register(BooleanSetting, BooleanSettingAdmin)
+
 
 # region Discord
 
@@ -119,8 +130,13 @@ class TeamPuzzleActivityAdmin(admin.ModelAdmin):
     def activity_is_completed(self, obj) -> bool:
         return obj.is_completed
 
-    readonly_fields: Sequence[str] = ('puzzle_start_at', "activity_is_active", "activity_is_completed")
-    list_display = ("team", "puzzle", "activity_is_active", "activity_is_completed",
+    @admin.display(boolean=True, description="Is Verified")
+    def activity_is_verified(self, obj) -> bool:
+        return obj.is_verified
+
+    readonly_fields: Sequence[str] = ('puzzle_start_at', "activity_is_active",
+                                      "activity_is_completed", "activity_is_verified")
+    list_display = ("team", "puzzle", "activity_is_active", "activity_is_completed", "activity_is_verified",
                     "puzzle_start_at", "puzzle_completed_at", "locked_out_until")
 
 
@@ -135,21 +151,54 @@ class VerificationPhotoAdmin(admin.ModelAdmin):
 admin.site.register(VerificationPhoto, VerificationPhotoAdmin)
 
 
+class PuzzleGuessAdmin(admin.ModelAdmin):
+
+    list_display = ("activity", "datetime", "value")
+
+
+admin.site.register(PuzzleGuess, PuzzleGuessAdmin)
+
+
 class TeamAdmin(admin.ModelAdmin):
     """Admin for teams."""
 
-    list_display = ("display_name", "scavenger_team", "scavenger_finished")
+    list_display = ("display_name", "scavenger_team", "scavenger_finished", "scavenger_enabled_for_team")
     search_fields: Sequence[str] = ("display_name", "group")
     actions = [
-        "reset_team_scavenger_progress"
+        "reset_team_scavenger_progress",
+        "refresh_team_scavenger_progress",
+        "enable_scavenger_for_team",
+        "disable_scavenger_for_team"
     ]
     ordering: Optional[Sequence[str]] = ("scavenger_team",)
+
+    @admin.display(boolean=True, description="Scavenger Enabled for Team")
+    def scavenger_enabled_for_team(self, obj: Team) -> bool:
+        return obj.scavenger_enabled_for_team
 
     @admin.action(description="Reset team scavenger progress")
     def reset_team_scavenger_progress(self, request, queryset):
 
         for obj in queryset:
             obj.reset_scavenger_progress()
+
+    @admin.action(description="Refresh team scavenger progress")
+    def refresh_team_scavenger_progress(self, request, queryset: Iterable[Team]):
+
+        for obj in queryset:
+            obj.refresh_scavenger_progress()
+
+    @admin.action(description="Enable scavenger for the team")
+    def enable_scavenger_for_team(self, request, queryset: Iterable[Team]):
+
+        for obj in queryset:
+            obj.enable_scavenger_for_team()
+
+    @admin.action(description="Disable scavenger for the team")
+    def disable_scavenger_for_team(self, request, queryset: Iterable[Team]):
+
+        for obj in queryset:
+            obj.disable_scavenger_for_team()
 
 
 class MagicLinkAdmin(admin.ModelAdmin):
