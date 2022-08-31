@@ -257,7 +257,7 @@ class Puzzle(models.Model):
         qr.make(fit=True)
 
         blob = BytesIO()
-        STYLE_IMAGE_PATH = "engfrosh_site/SpiritX.png"
+        STYLE_IMAGE_PATH = "SpiritX.png"
         USE_IMAGE = True
         if USE_IMAGE:
             img = qr.make_image(image_factory=StyledPilImage, embeded_image_path=STYLE_IMAGE_PATH)
