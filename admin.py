@@ -5,7 +5,7 @@ from django.contrib import admin
 
 
 from .models import BooleanSetting, ChannelTag, DiscordBingoCards, DiscordChannel, DiscordOverwrite, DiscordRole, \
-    FroshRole, Puzzle, PuzzleGuess, PuzzleStream, Team, DiscordUser, MagicLink, TeamPuzzleActivity, UniversityProgram, \
+    FroshRole, Puzzle, PuzzleGuess, PuzzleStream, Team, DiscordUser, MagicLink, TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
     UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild
 
 
@@ -13,6 +13,24 @@ class BooleanSettingAdmin(admin.ModelAdmin):
 
     readonly_fields: Sequence[str] = ("id",)
     list_display = ("id", "value")
+    actions = [
+        "set_value_to_false",
+        "set_value_to_true"
+    ]
+
+    @admin.action(description="Set value to False")
+    def set_value_to_false(self, request, queryset: Iterable[BooleanSetting]):
+
+        for obj in queryset:
+            obj.value = False
+            obj.save()
+
+    @admin.action(description="Set value to True")
+    def set_value_to_true(self, request, queryset: Iterable[BooleanSetting]):
+
+        for obj in queryset:
+            obj.value = True
+            obj.save()
 
 
 admin.site.register(BooleanSetting, BooleanSettingAdmin)
@@ -120,6 +138,14 @@ class PuzzleAdmin(admin.ModelAdmin):
     ordering: Optional[Sequence[str]] = ("enabled", "stream", "order")
 
 
+class TeamTradeUpActivityAdmin(admin.ModelAdmin):
+
+    list_display = ("team", "entered_at")
+
+
+admin.site.register(TeamTradeUpActivity, TeamTradeUpActivityAdmin)
+
+
 class TeamPuzzleActivityAdmin(admin.ModelAdmin):
 
     @admin.display(boolean=True, description="Is Active")
@@ -145,7 +171,7 @@ admin.site.register(TeamPuzzleActivity, TeamPuzzleActivityAdmin)
 
 class VerificationPhotoAdmin(admin.ModelAdmin):
 
-    list_display = ("datetime", "approved")
+    list_display = ("pk", "datetime", "approved")
 
 
 admin.site.register(VerificationPhoto, VerificationPhotoAdmin)
@@ -162,13 +188,16 @@ admin.site.register(PuzzleGuess, PuzzleGuessAdmin)
 class TeamAdmin(admin.ModelAdmin):
     """Admin for teams."""
 
-    list_display = ("display_name", "scavenger_team", "scavenger_finished", "scavenger_enabled_for_team")
+    list_display = ("display_name", "scavenger_team", "scavenger_finished",
+                    "scavenger_enabled_for_team", "trade_up_enabled_for_team")
     search_fields: Sequence[str] = ("display_name", "group")
     actions = [
         "reset_team_scavenger_progress",
         "refresh_team_scavenger_progress",
         "enable_scavenger_for_team",
-        "disable_scavenger_for_team"
+        "disable_scavenger_for_team",
+        "enable_trade_up_for_team",
+        "disable_trade_up_for_team"
     ]
     ordering: Optional[Sequence[str]] = ("scavenger_team",)
 
@@ -199,6 +228,18 @@ class TeamAdmin(admin.ModelAdmin):
 
         for obj in queryset:
             obj.disable_scavenger_for_team()
+
+    @admin.action(description="Enable trade up for the team")
+    def enable_trade_up_for_team(self, request, queryset: Iterable[Team]):
+
+        for obj in queryset:
+            obj.enable_trade_up_for_team()
+
+    @admin.action(description="Disable trade up for the team")
+    def disable_trade_up_for_team(self, request, queryset: Iterable[Team]):
+
+        for obj in queryset:
+            obj.disable_trade_up_for_team()
 
 
 class MagicLinkAdmin(admin.ModelAdmin):

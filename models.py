@@ -45,12 +45,23 @@ from django.core.files import File
 
 SCAVENGER_DIR = "scavenger/"
 PUZZLE_DIR = "puzzles/"
-PUZZLE_VERIFICATION_DIR = "scavenger/verification_photos/"
+PUZZLE_VERIFICATION_DIR = "verification_photos/"
 QR_CODE_DIR = "qr_codes/"
 
 FILE_RANDOM_LENGTH = 128
 
 PUZZLE_SECRET_ID_LENGTH = 16
+
+# region Database Setup
+
+
+def initialize_database() -> None:
+    ChannelTag.objects.get_or_create(name="SCAVENGER_MANAGEMENT_UPDATES_CHANNEL")
+    ChannelTag.objects.get_or_create(name="TRADE_UP_MANAGEMENT_UPDATES_CHANNEL")
+    BooleanSetting.objects.get_or_create(id="SCAVENGER_ENABLED")
+    BooleanSetting.objects.get_or_create(id="TRADE_UP_ENABLED")
+
+# endregion
 
 
 def get_client() -> Client:
@@ -75,9 +86,6 @@ def qr_code_path(instance, filename):
 
 def random_puzzle_secret_id():
     return "".join(random.choice(string.ascii_lowercase) for i in range(PUZZLE_SECRET_ID_LENGTH))
-
-# For Legacy
-# TODO: Remove
 
 
 def hint_path(instance, filename):
@@ -344,9 +352,6 @@ class Team(models.Model):
     # def initialize_all_team_scavenger_questions():
     #     for t in Team.objects.all():
 
-    # def initialize_team_scavenger_questions():
-    #     for
-
     display_name = models.CharField("Team Name", max_length=64, unique=True)
     group = models.OneToOneField(Group, CASCADE, primary_key=True)
 
@@ -354,6 +359,9 @@ class Team(models.Model):
     scavenger_finished = models.BooleanField("Finished Scavenger", default=False)
     scavenger_locked_out_until = models.DateTimeField(blank=True, null=True, default=None)
     scavenger_enabled_for_team = models.BooleanField(default=True)
+
+    trade_up_team = models.BooleanField(default=True)
+    trade_up_enabled_for_team = models.BooleanField(default=True)
 
     puzzles = models.ManyToManyField(Puzzle, through="TeamPuzzleActivity")
 
@@ -456,6 +464,13 @@ class Team(models.Model):
         return BooleanSetting.objects.get_or_create(
             id="SCAVENGER_ENABLED")[0].value and self.scavenger_enabled_for_team and self.scavenger_team
 
+    @property
+    def trade_up_enabled(self) -> bool:
+        """Returns a bool if trade up is enabled for the team."""
+
+        return BooleanSetting.objects.get_or_create(
+            id="TRADE_UP_ENABLED")[0].value and self.trade_up_enabled_for_team and self.trade_up_team
+
     def enable_scavenger_for_team(self) -> None:
 
         self.scavenger_enabled_for_team = True
@@ -464,6 +479,14 @@ class Team(models.Model):
     def disable_scavenger_for_team(self) -> None:
 
         self.scavenger_enabled_for_team = False
+        self.save()
+
+    def enable_trade_up_for_team(self) -> None:
+        self.trade_up_enabled_for_team = True
+        self.save()
+
+    def disable_trade_up_for_team(self) -> None:
+        self.trade_up_enabled_for_team = False
         self.save()
 
     def reset_scavenger_progress(self) -> None:
@@ -577,6 +600,18 @@ class VerificationPhoto(models.Model):
         self.approved = True
         self.save()
         TeamPuzzleActivity.objects.get(verification_photo=self).team.refresh_scavenger_progress()
+
+
+class TeamTradeUpActivity(models.Model):
+
+    team = models.ForeignKey(Team, on_delete=CASCADE)
+    verification_photo = models.ForeignKey(VerificationPhoto, on_delete=SET_NULL, null=True, blank=True, default=None)
+    entered_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+
+        verbose_name = "Team Trade Up Activity"
+        verbose_name_plural = "Team Trade Up Activities"
 
 
 class TeamPuzzleActivity(models.Model):
