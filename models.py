@@ -563,6 +563,7 @@ class VerificationPhoto(models.Model):
     def approve(self) -> None:
         self.approved = True
         self.save()
+        TeamPuzzleActivity.objects.get(verification_photo=self).team.refresh_scavenger_progress()
 
 
 class TeamPuzzleActivity(models.Model):
