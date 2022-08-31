@@ -241,8 +241,16 @@ class Puzzle(models.Model):
         # Mark the question as correct
         activity.mark_completed()
 
+        ChannelTag.objects.get_or_create(name="SCAVENGER_MANAGEMENT_UPDATES_CHANNEL")
+
+        discord_channels = DiscordChannel.objects.filter(tags__name="SCAVENGER_MANAGEMENT_UPDATES_CHANNEL")
+
         # If verification is required,
         if self.require_photo_upload:
+
+            for ch in discord_channels:
+                ch.send(f"{team.display_name} has completed question {self.name}, awaiting a photo upload.")
+
             return (correct, False, None, True)
 
         # Otherwise if correct check if done scavenger and if not increment question
@@ -251,9 +259,14 @@ class Puzzle(models.Model):
         if not next_puzzle:
             team.check_if_finished_scavenger()
 
+            for ch in discord_channels:
+                ch.send(f"{team.display_name} has completed scavenger stream {self.stream.name}, awaiting a photo upload.")
+
             return (correct, True, None, False)
 
         TeamPuzzleActivity(team=team, puzzle=next_puzzle).save()
+        for ch in discord_channels:
+            ch.send(f"{team.display_name} has completed puzzle {self.name}, moving on to puzzle {next_puzzle.name}")
 
         return (correct, False, next_puzzle, False)
 
@@ -1041,6 +1054,23 @@ class DiscordChannel(models.Model):
             o_dict[ov.user_id] = ov
 
         return o_dict
+
+    @staticmethod
+    def scavenger_updates_channels() -> List[DiscordChannel]:
+        ChannelTag.objects.get_or_create(name="SCAVENGER_MANAGEMENT_UPDATES_CHANNEL")
+
+        return list(DiscordChannel.objects.filter(tags__name="SCAVENGER_MANAGEMENT_UPDATES_CHANNEL"))
+
+    @staticmethod
+    def send_to_scavenger_updates_channels(content) -> None:
+        for ch in DiscordChannel.scavenger_updates_channels():
+            ch.send(content=content)
+
+    def send(self, content: str):
+        """Sends a message to the channel."""
+
+        api = get_client()
+        return api.send_channel_message(self.id, content=content)
 
     def lock(self) -> bool:
         """Lock the channel, only affecting the overwrites in the channel info."""
