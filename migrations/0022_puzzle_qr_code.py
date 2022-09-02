@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='puzzle',
             name='qr_code',
-            field=models.ImageField(blank=True, upload_to=common_models.models.qr_code_path),
+            field=models.ImageField(blank=True, upload_to=common_models.models.scavenger_qr_code_path),
         ),
     ]

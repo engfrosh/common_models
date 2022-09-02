@@ -41,6 +41,7 @@ from django.utils import timezone  # noqa: E402
 from django.core.exceptions import ObjectDoesNotExist  # noqa: E402
 from django.conf import settings  # noqa: E402
 from django.core.files import File
+from django.utils.encoding import iri_to_uri
 
 
 SCAVENGER_DIR = "scavenger/"
@@ -80,8 +81,12 @@ def puzzle_path(instance, filename):
     return random_path(instance, filename, SCAVENGER_DIR + PUZZLE_DIR)
 
 
-def qr_code_path(instance, filename):
+def scavenger_qr_code_path(instance, filename):
     return random_path(instance, filename, SCAVENGER_DIR + QR_CODE_DIR)
+
+
+def magic_link_qr_code_path(instance, filename):
+    return random_path(instance, filename, "magic_links/" + QR_CODE_DIR)
 
 
 def random_puzzle_secret_id():
@@ -157,7 +162,7 @@ class Puzzle(models.Model):
     order = models.DecimalField(max_digits=8, decimal_places=3)
     stream = models.ForeignKey(PuzzleStream, on_delete=PROTECT)
 
-    qr_code = models.ImageField(upload_to=qr_code_path, blank=True)
+    qr_code = models.ImageField(upload_to=scavenger_qr_code_path, blank=True)
 
     puzzle_text = models.CharField("Text", blank=True, max_length=2000)
     puzzle_file = models.FileField(upload_to=puzzle_path, blank=True)
@@ -1195,6 +1200,8 @@ class MagicLink(models.Model):
     expiry = models.DateTimeField(default=days5)
     delete_immediately = models.BooleanField(default=True)
 
+    qr_code = models.ImageField(upload_to=magic_link_qr_code_path, blank=True)
+
     def link_used(self) -> bool:
         """Returns True if link can still be used, or False if not."""
         if self.delete_immediately:
@@ -1210,4 +1217,40 @@ class MagicLink(models.Model):
             self.save()
             return True
 
+    def full_link(
+            self, hostname: Optional[str] = None, login_path: Optional[str] = None, redirect: Optional[str] = None):
+
+        if hostname is None:
+            hostname_s = "https://" + settings.ALLOWED_HOSTS[0]
+        else:
+            hostname_s = hostname
+
+        DEFAULT_LOGIN_PATH = "/accounts/login"
+
+        if login_path is None:
+            login_path = DEFAULT_LOGIN_PATH
+
+        if redirect is not None:
+            redirect_str = f"&redirect={iri_to_uri(redirect)}"
+        else:
+            redirect_str = ""
+
+        if hostname_s[:8] != "https://" or hostname_s[:7] != "http://":
+            # TODO clean this up to make it better
+            hostname_s = "http://" + hostname_s
+
+        return f"{hostname_s}{login_path}?auth={self.token}{redirect_str}"
+
+    def _generate_qr_code(
+            self, hostname: Optional[str] = None, login_path: Optional[str] = None, redirect: Optional[str] = None) -> None:
+
+        qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
+        qr.add_data(self.full_link(hostname=hostname, login_path=login_path, redirect=redirect))
+        qr.make(fit=True)
+
+        blob = BytesIO()
+        img = qr.make_image()
+        img.save(blob, "PNG")
+        self.qr_code.save("QRCode.png", File(blob))
+        self.save()
 # endregion
