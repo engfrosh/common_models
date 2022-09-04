@@ -422,25 +422,25 @@ class Team(models.Model):
     @property
     def active_puzzles(self) -> List[Puzzle]:
         active_puzzle_activities = filter(TeamPuzzleActivity._is_active,
-                                          TeamPuzzleActivity.objects.filter(team=self.group.id))
+                                          self._puzzle_activities_qs)
         return [apa.puzzle for apa in active_puzzle_activities]
 
     @property
     def completed_puzzles(self) -> List[Puzzle]:
         completed_puzzle_activities = filter(TeamPuzzleActivity._is_completed,
-                                             TeamPuzzleActivity.objects.filter(team=self.group.id))
+                                             self._puzzle_activities_qs)
         return [cpa.puzzle for cpa in completed_puzzle_activities]
 
     @property
     def verified_puzzles(self) -> List[Puzzle]:
         verified_puzzle_activities = filter(TeamPuzzleActivity._is_verified,
-                                            TeamPuzzleActivity.objects.filter(team=self.id))
+                                            self._puzzle_activities_qs)
         return [vpa.puzzle for vpa in verified_puzzle_activities]
 
     @property
     def completed_puzzles_awaiting_verification(self) -> List[Puzzle]:
         return [cpav.puzzle for cpav in filter(TeamPuzzleActivity._is_awaiting_verification,
-                                               TeamPuzzleActivity.objects.filter(team=self.id))]
+                                               self._puzzle_activities_qs)]
 
     @property
     def all_puzzles(self) -> List[Puzzle]:
@@ -448,7 +448,7 @@ class Team(models.Model):
 
     @property
     def _puzzle_activities_qs(self) -> models.QuerySet:
-        return TeamPuzzleActivity.objects.filter(team=self.id)
+        return TeamPuzzleActivity.objects.filter(team=self.id).order_by("puzzle__order")
 
     @property
     def puzzle_activities(self) -> List[TeamPuzzleActivity]:
