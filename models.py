@@ -612,6 +612,7 @@ class TeamTradeUpActivity(models.Model):
     team = models.ForeignKey(Team, on_delete=CASCADE)
     verification_photo = models.ForeignKey(VerificationPhoto, on_delete=SET_NULL, null=True, blank=True, default=None)
     entered_at = models.DateTimeField(auto_now=True)
+    object_name = models.CharField(max_length=200, null=True, blank=True)
 
     class Meta:
 
