@@ -22,6 +22,8 @@ from qrcode.image.styledpil import StyledPilImage
 from typing import Iterable, List, Dict, Optional, Tuple, Union
 from engfrosh_site.settings import DEFAULT_DISCORD_API_VERSION
 
+import credentials
+
 import pyaccord
 from pyaccord import Client
 from pyaccord.invite import Invite
@@ -1193,6 +1195,13 @@ class DiscordUser(models.Model):
         self.refresh_token = refresh_token
         self.expiry = datetime.datetime.now() + datetime.timedelta(seconds=expires_in - 10)
         self.save()
+
+    def kick_user(self):
+        """Kick user from the default guild"""
+
+        client = get_client()
+
+        client.remove_guild_member(user_id=self.id, guild_id=credentials.GUILD_ID)
 
 
 class MagicLink(models.Model):

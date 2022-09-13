@@ -90,6 +90,13 @@ class DiscordUserAdmin(admin.ModelAdmin):
 
     list_display = ('discord_username', 'user')
     search_fields = ('discord_username', 'user__username')
+    actions = ("kick_user_from_default_guild",)
+
+    @admin.action(description="Kick from default guild")
+    def kick_user_from_default_guild(self, request, queryset: Iterable[DiscordUser]):
+
+        for obj in queryset:
+            obj.kick_user()
 
 # region Discord Guild
 
