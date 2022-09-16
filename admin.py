@@ -141,8 +141,24 @@ class PuzzleAdmin(admin.ModelAdmin):
     """Admin for Scavenger Puzzle"""
 
     list_display = ("name", "stream", "enabled", "order", "answer")
+    readonly_fields = ("secret_id",)
     search_fields = ("id", "name", "answer", "secret_id", "stream", "order", "puzzle_text")
     ordering: Optional[Sequence[str]] = ("enabled", "stream", "order")
+    actions = ("disable_puzzle", "enable_puzzle")
+
+    @admin.action(description="Disable puzzle")
+    def disable_puzzle(self, request, queryset):
+
+        for obj in queryset:
+            obj.enabled = False
+            obj.save()
+
+    @admin.action(description="Enable puzzle")
+    def enable_puzzle(self, request, queryset):
+
+        for obj in queryset:
+            obj.enabled = True
+            obj.save()
 
 
 class TeamTradeUpActivityAdmin(admin.ModelAdmin):
@@ -171,6 +187,7 @@ class TeamPuzzleActivityAdmin(admin.ModelAdmin):
                                       "activity_is_completed", "activity_is_verified")
     list_display = ("team", "puzzle", "activity_is_active", "activity_is_completed", "activity_is_verified",
                     "puzzle_start_at", "puzzle_completed_at", "locked_out_until")
+    ordering = ("-puzzle_completed_at",)
 
 
 admin.site.register(TeamPuzzleActivity, TeamPuzzleActivityAdmin)

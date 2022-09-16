@@ -37,6 +37,7 @@ from common_models.common_models_setup import init_django  # noqa: E402
 init_django()
 
 from django.db import models  # noqa: E402
+from django.db.utils import IntegrityError
 from django.db.models.deletion import CASCADE, PROTECT, SET_NULL  # noqa: E402
 from django.contrib.auth.models import User, Group  # noqa: E402
 from django.utils import timezone  # noqa: E402
@@ -242,18 +243,26 @@ class Puzzle(models.Model):
         Will move team to next question if it is correct or complete scavenger if appropriate.
         """
 
+        logger.debug(f"Checking team guess for team {team} with guess: {guess}")
+
         activity = TeamPuzzleActivity.objects.get(team=team.id, puzzle=self.id)
+        logger.debug(f"Got current puzzle activity for team {team}: {activity}")
 
         # Create a guess object
-        PuzzleGuess(value=guess, activity=activity).save()
+        pg = PuzzleGuess(value=guess, activity=activity)
+        pg.save()
+        logger.debug(f"Saved puzzle guess for team {team} on puzzle {self}: {pg}")
 
         # Check the answer
         correct = self.answer.lower() == guess.lower()
 
         if not correct:
+            logger.debug(f"Team {team} guess {guess} is not the answer to puzzle {self}, {self.answer.lower}")
             return (correct, False, None, False)
 
         # Mark the question as correct
+        logger.debug(f"Team {team} guess {guess} is correct for puzzle {self}")
+
         activity.mark_completed()
 
         ChannelTag.objects.get_or_create(name="SCAVENGER_MANAGEMENT_UPDATES_CHANNEL")
@@ -270,6 +279,7 @@ class Puzzle(models.Model):
 
         # Otherwise if correct check if done scavenger and if not increment question
         next_puzzle = self.stream.get_next_enabled_puzzle(self)
+        logger.debug(f"Next puzzle for team {team} is {next_puzzle}")
 
         if not next_puzzle:
             team.check_if_finished_scavenger()
@@ -540,6 +550,8 @@ class Team(models.Model):
     def refresh_scavenger_progress(self) -> None:
         """Moves team along if verified on a puzzle or a puzzle has been disabled."""
 
+        logger.debug(f"Refreshing scavenger progress for team {self}")
+
         if self.scavenger_finished:
             return
 
@@ -566,7 +578,11 @@ class Team(models.Model):
                             if self.check_if_finished_scavenger():
                                 return
 
-                        TeamPuzzleActivity(team=self, puzzle=next_puzzle).save()
+                        try:
+                            TeamPuzzleActivity(team=self, puzzle=next_puzzle).save()
+                        except IntegrityError as e:
+                            logger.exception("Integrity error trying to set team to next question")
+                            raise e
 
         return
 
@@ -606,7 +622,10 @@ class VerificationPhoto(models.Model):
     def approve(self) -> None:
         self.approved = True
         self.save()
-        TeamPuzzleActivity.objects.get(verification_photo=self).team.refresh_scavenger_progress()
+        try:
+            TeamPuzzleActivity.objects.get(verification_photo=self).team.refresh_scavenger_progress()
+        except TeamPuzzleActivity.DoesNotExist:
+            pass
 
 
 class TeamTradeUpActivity(models.Model):
@@ -671,11 +690,17 @@ class TeamPuzzleActivity(models.Model):
         return False
 
     def mark_completed(self) -> None:
+
+        logger.debug(f"Marking puzzle {self.puzzle} completed for team {self.team}")
+
         if self.puzzle_completed_at:
-            raise Exception("Puzzle already completed")
+            logger.warning(f"Puzzle {self.puzzle} already completed for team {self.team}")
+            return
 
         self.puzzle_completed_at = datetime.datetime.now()
         self.save()
+
+        logger.debug(f"Puzzle {self.puzzle} marked as completed for team {self.team} at {self.puzzle_completed_at}")
 
     @property
     def is_active(self) -> bool:
