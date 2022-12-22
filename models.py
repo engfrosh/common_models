@@ -65,6 +65,15 @@ def initialize_database() -> None:
     BooleanSetting.objects.get_or_create(id="SCAVENGER_ENABLED")
     BooleanSetting.objects.get_or_create(id="TRADE_UP_ENABLED")
 
+def initialize_scav() -> None:
+    for team in Team.objects.all():
+        streams = PuzzleStream.objects.filter(enabled=True)
+
+        for s in streams:
+            puz = s.first_enabled_puzzle
+            pa = TeamPuzzleActivity(team=team, puzzle=puz)
+            pa.save()
+
 # endregion
 
 
@@ -775,6 +784,8 @@ class UserDetails(models.Model):
     name = models.CharField("Name", max_length=64)
     pronouns = models.CharField("Pronouns", max_length=20, blank=True)
     invite_email_sent = models.BooleanField("Invite Email Sent", default=False)
+    checked_in = models.BooleanField("Checked In", default=False)
+    shirt_size = models.CharField("Shirt Size", max_length=5, blank=True)
 
     class Meta:
         """User Details Meta information."""
