@@ -25,6 +25,7 @@ def init_django(
         INSTALLED_APPS=installed_apps,
         DATABASES={
             'default': default_database
-        }
+        },
+        DEFAULT_SCAVENGER_PUZZLE_REQUIRE_PHOTO_UPLOAD=True
     )
     django.setup()

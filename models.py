@@ -20,7 +20,7 @@ import qrcode.image.svg
 from qrcode.image.styledpil import StyledPilImage
 
 from typing import Iterable, List, Dict, Optional, Tuple, Union
-from engfrosh_site.settings import DEFAULT_DISCORD_API_VERSION
+from django.conf import settings
 
 import credentials
 
@@ -78,7 +78,7 @@ def initialize_scav() -> None:
 
 
 def get_client() -> Client:
-    return Client(settings.DISCORD_BOT_TOKEN, api_version=DEFAULT_DISCORD_API_VERSION)
+    return Client(settings.DISCORD_BOT_TOKEN, api_version=settings.DEFAULT_DISCORD_API_VERSION)
 
 
 def random_path(instance, filename, base="", *, length: Optional[int] = None):
@@ -871,7 +871,7 @@ class DiscordGuild(models.Model):
     def delete_guild(self) -> None:
         """Deletes the specified guild from discord and sets it's value to deleted."""
 
-        client = Client(settings.DISCORD_BOT_TOKEN, api_version=DEFAULT_DISCORD_API_VERSION)
+        client = Client(settings.DISCORD_BOT_TOKEN, api_version=settings.DEFAULT_DISCORD_API_VERSION)
 
         client.delete_guild(self.id)
 
@@ -880,7 +880,7 @@ class DiscordGuild(models.Model):
 
     def create_invite(self, *, unique: Optional[bool] = None, max_uses: Optional[int] = None) -> Invite:
 
-        client = Client(settings.DISCORD_BOT_TOKEN, api_version=DEFAULT_DISCORD_API_VERSION)
+        client = Client(settings.DISCORD_BOT_TOKEN, api_version=settings.DEFAULT_DISCORD_API_VERSION)
 
         guild = client.get_guild(self.id)
         if not guild:
@@ -911,7 +911,7 @@ class DiscordGuild(models.Model):
     def create_new_guild(name: str) -> DiscordGuild:
         """Creates a new guild using the discord api, saves it to the database and returns the database object."""
 
-        client = Client(settings.DISCORD_BOT_TOKEN, api_version=DEFAULT_DISCORD_API_VERSION)
+        client = Client(settings.DISCORD_BOT_TOKEN, api_version=settings.DEFAULT_DISCORD_API_VERSION)
 
         pyaccord_guild = client.create_guild(name)
 
@@ -925,7 +925,7 @@ class DiscordGuild(models.Model):
     def scan_and_update_guilds() -> DiscordGuildUpdateGuildResult:
         """Returns (num_added, num_existing_updated, num_existing_not_updated, num_removed)"""
 
-        client = Client(settings.DISCORD_BOT_TOKEN, api_version=DEFAULT_DISCORD_API_VERSION)
+        client = Client(settings.DISCORD_BOT_TOKEN, api_version=settings.DEFAULT_DISCORD_API_VERSION)
 
         current_guilds = client.get_current_user_guilds()
 
@@ -969,6 +969,10 @@ class DiscordRole(models.Model):
 
     role_id = models.PositiveBigIntegerField("Discord Role ID", primary_key=True)
     group_id = models.OneToOneField(Group, CASCADE)
+
+    @property
+    def group(self) -> Group:
+        return self.group_id
 
     class Meta:
         """Meta information for Discord roles."""
