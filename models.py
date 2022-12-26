@@ -484,11 +484,32 @@ class Team(models.Model):
     # def latest_puzzle_activities(self) -> List[TeamPuzzleActivity]:
 
     @property
+    def scavenger_locked(self) -> bool:
+        if self.scavenger_locked_out_until == None:
+            return False
+        now = timezone.now()
+        if self.scavenger_locked_out_until <= now:
+            self.scavenger_locked_out_until = None
+            self.save()
+            return False
+        return True
+    def scavenger_lock(self, minutes) -> None:
+        self.scavenger_locked_out_until = timezone.now() + timezone.timedelta(minutes=minutes)
+        self.save()
+    @property
+    def scavenger_unlock(self) -> None:
+        self.scavenger_locked_out_until = None
+        self.save()
+    @property
+    def lockout_remaining(self) -> int:
+        if not self.scavenger_locked:
+            return 0
+        return self.scavenger_locked_out_until - timezone.now()
+    @property
     def scavenger_enabled(self) -> bool:
         """Returns a bool if scav is enabled for the team."""
-
         return BooleanSetting.objects.get_or_create(
-            id="SCAVENGER_ENABLED")[0].value and self.scavenger_enabled_for_team and self.scavenger_team
+            id="SCAVENGER_ENABLED")[0].value and self.scavenger_enabled_for_team and self.scavenger_team and not self.scavenger_locked
 
     @property
     def trade_up_enabled(self) -> bool:
@@ -598,23 +619,23 @@ class Team(models.Model):
     def remove_blocks(self):
         """Remove lockouts and cooldowns."""
 
-        #     self.locked_out_until = None
+        self.locked_out_until = None
         #     self.hint_cooldown_until = None
 
-        #     self.save()
-        raise NotImplementedError("Remove blocks not implemented yet")
+        self.save()
+        raise True
 
     def lockout(self, duration: Optional[datetime.timedelta] = None) -> None:
         """Lockout team for seconds."""
 
-        #     if duration is None:
-        #         duration = datetime.timedelta(minutes=15)
+        if duration is None:
+            duration = datetime.timedelta(minutes=15)
 
-        #     now = timezone.now()
-        #     until = now + duration
-        #     self.locked_out_until = until
-        #     self.save()
-        raise NotImplementedError("Lockout team not implemented yet")
+        now = timezone.now()
+        until = now + duration
+        self.locked_out_until = until
+        self.save()
+        raise True
 
 
 def _puzzle_verification_photo_upload_path(instance, filename) -> str:
