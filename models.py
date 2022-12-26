@@ -679,7 +679,6 @@ class TeamPuzzleActivity(models.Model):
     puzzle_start_at = models.DateTimeField(auto_now=True)
     puzzle_completed_at = models.DateTimeField(null=True, blank=True, default=None)
     verification_photo = models.ForeignKey(VerificationPhoto, on_delete=SET_NULL, null=True, blank=True, default=None)
-    locked_out_until = models.DateTimeField(null=True, blank=True, default=None)
 
     class Meta:
 
