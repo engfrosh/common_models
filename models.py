@@ -20,7 +20,6 @@ import qrcode.image.svg
 from qrcode.image.styledpil import StyledPilImage
 
 from typing import Iterable, List, Dict, Optional, Tuple, Union
-from django.conf import settings
 
 import credentials
 
@@ -31,11 +30,8 @@ from pyaccord.channel import TextChannel
 from pyaccord.guild import Guild
 from pyaccord.permissions import Permissions
 
-logger = logging.getLogger("common_models.models")
 
 from common_models.common_models_setup import init_django  # noqa: E402
-init_django()
-
 from django.db import models  # noqa: E402
 from django.db.utils import IntegrityError
 from django.db.models.deletion import CASCADE, PROTECT, SET_NULL  # noqa: E402
@@ -45,6 +41,9 @@ from django.core.exceptions import ObjectDoesNotExist  # noqa: E402
 from django.conf import settings  # noqa: E402
 from django.core.files import File
 from django.utils.encoding import iri_to_uri
+
+init_django()
+logger = logging.getLogger("common_models.models")
 
 
 SCAVENGER_DIR = "scavenger/"
@@ -64,6 +63,7 @@ def initialize_database() -> None:
     ChannelTag.objects.get_or_create(name="TRADE_UP_MANAGEMENT_UPDATES_CHANNEL")
     BooleanSetting.objects.get_or_create(id="SCAVENGER_ENABLED")
     BooleanSetting.objects.get_or_create(id="TRADE_UP_ENABLED")
+
 
 def initialize_scav() -> None:
     for team in Team.objects.all():
@@ -246,7 +246,7 @@ class Puzzle(models.Model):
 
     def check_team_guess(self, team: Team, guess: str) -> Tuple[bool, bool, Optional[Puzzle], bool]:
         """
-        Checks if a team's guess is correct. First is if correct, second if stream complete, 
+        Checks if a team's guess is correct. First is if correct, second if stream complete,
         third the new puzzle if unlocked, fourth if a verification picture is required.
 
         Will move team to next question if it is correct or complete scavenger if appropriate.
@@ -294,7 +294,8 @@ class Puzzle(models.Model):
             team.check_if_finished_scavenger()
 
             for ch in discord_channels:
-                ch.send(f"{team.display_name} has completed scavenger stream {self.stream.name}, awaiting a photo upload.")
+                ch.send(f"{team.display_name} has completed scavenger stream {self.stream.name}" +
+                        ", awaiting a photo upload.")
 
             return (correct, True, None, False)
 
@@ -485,7 +486,7 @@ class Team(models.Model):
 
     @property
     def scavenger_locked(self) -> bool:
-        if self.scavenger_locked_out_until == None:
+        if self.scavenger_locked_out_until is None:
             return False
         now = timezone.now()
         if self.scavenger_locked_out_until <= now:
@@ -493,23 +494,28 @@ class Team(models.Model):
             self.save()
             return False
         return True
+
     def scavenger_lock(self, minutes) -> None:
         self.scavenger_locked_out_until = timezone.now() + timezone.timedelta(minutes=minutes)
         self.save()
+
     @property
     def scavenger_unlock(self) -> None:
         self.scavenger_locked_out_until = None
         self.save()
+
     @property
     def lockout_remaining(self) -> int:
         if not self.scavenger_locked:
             return 0
         return self.scavenger_locked_out_until - timezone.now()
+
     @property
     def scavenger_enabled(self) -> bool:
         """Returns a bool if scav is enabled for the team."""
         return BooleanSetting.objects.get_or_create(
-            id="SCAVENGER_ENABLED")[0].value and self.scavenger_enabled_for_team and self.scavenger_team and not self.scavenger_locked
+            id="SCAVENGER_ENABLED")[0].value and self.scavenger_enabled_for_team and \
+            self.scavenger_team and not self.scavenger_locked
 
     @property
     def trade_up_enabled(self) -> bool:
@@ -1312,7 +1318,8 @@ class MagicLink(models.Model):
         return f"{hostname_s}{login_path}?auth={self.token}{redirect_str}"
 
     def _generate_qr_code(
-            self, hostname: Optional[str] = None, login_path: Optional[str] = None, redirect: Optional[str] = None) -> None:
+            self, hostname: Optional[str] = None, login_path: Optional[str] = None,
+            redirect: Optional[str] = None) -> None:
 
         qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
         qr.add_data(self.full_link(hostname=hostname, login_path=login_path, redirect=redirect))

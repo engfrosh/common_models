@@ -5,7 +5,8 @@ from django.contrib import admin
 
 
 from .models import BooleanSetting, ChannelTag, DiscordBingoCards, DiscordChannel, DiscordOverwrite, DiscordRole, \
-    FroshRole, Puzzle, PuzzleGuess, PuzzleStream, Team, DiscordUser, MagicLink, TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
+    FroshRole, Puzzle, PuzzleGuess, PuzzleStream, Team, DiscordUser, MagicLink, \
+    TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
     UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild
 
 
