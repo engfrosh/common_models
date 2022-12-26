@@ -186,7 +186,7 @@ class TeamPuzzleActivityAdmin(admin.ModelAdmin):
     readonly_fields: Sequence[str] = ('puzzle_start_at', "activity_is_active",
                                       "activity_is_completed", "activity_is_verified")
     list_display = ("team", "puzzle", "activity_is_active", "activity_is_completed", "activity_is_verified",
-                    "puzzle_start_at", "puzzle_completed_at", "locked_out_until")
+                    "puzzle_start_at", "puzzle_completed_at")
     ordering = ("-puzzle_completed_at",)
 
 
