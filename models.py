@@ -33,14 +33,14 @@ from pyaccord.permissions import Permissions
 from common_models.common_models_setup import init_django  # noqa: E402
 init_django()
 from django.db import models  # noqa: E402
-from django.db.utils import IntegrityError
+from django.db.utils import IntegrityError  # noqa: E402
 from django.db.models.deletion import CASCADE, PROTECT, SET_NULL  # noqa: E402
 from django.contrib.auth.models import User, Group  # noqa: E402
 from django.utils import timezone  # noqa: E402
 from django.core.exceptions import ObjectDoesNotExist  # noqa: E402
 from django.conf import settings  # noqa: E402
-from django.core.files import File
-from django.utils.encoding import iri_to_uri
+from django.core.files import File  # noqa: E402
+from django.utils.encoding import iri_to_uri  # noqa: E402
 
 logger = logging.getLogger("common_models.models")
 
