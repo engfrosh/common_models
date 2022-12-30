@@ -4,7 +4,7 @@ from typing import Iterable, Optional, Sequence
 from django.contrib import admin
 
 
-from .models import BooleanSetting, ChannelTag, DiscordBingoCards, DiscordChannel, DiscordOverwrite, DiscordRole, \
+from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite, DiscordRole, \
     FroshRole, Puzzle, PuzzleGuess, PuzzleStream, Team, DiscordUser, MagicLink, \
     TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
     UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild
@@ -288,15 +288,6 @@ class UserDetailsAdmin(admin.ModelAdmin):
 
 admin.site.register(UserDetails, UserDetailsAdmin)
 
-
-class DiscordBingoCardAdmin(admin.ModelAdmin):
-    """Discord Bingo Card Admin."""
-
-    list_display = ('bingo_card', 'discord_id')
-    search_fields = ('bingo_card', 'discord_id')
-
-
-admin.site.register(DiscordBingoCards, DiscordBingoCardAdmin)
 
 # admin.site.register([Hint, QuestionTime, Settings])
 
