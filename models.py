@@ -822,22 +822,6 @@ class UserDetails(models.Model):
         return f"{self.name} ({self.user.username})"
 
 
-class DiscordBingoCards(models.Model):
-    """Lists bingo cards and their assigned discord ids."""
-
-    discord_id = models.PositiveBigIntegerField(db_index=True, unique=True)
-    bingo_card = models.PositiveIntegerField(primary_key=True)
-
-    class Meta:
-        """Discord Bingo Card Meta Information."""
-
-        verbose_name = "Discord Bingo Card"
-        verbose_name_plural = "Discord Bingo Cards"
-
-    def __str__(self) -> str:
-        return f"<Bingo Card {self.bingo_card} assigned to {self.discord_id}>"
-
-
 class VirtualTeam(models.Model):
     """Tracks Virtual Teams and their discord ids."""
 
@@ -1220,6 +1204,12 @@ class DiscordChannel(models.Model):
 
         return True
 
+
+class RoleInvite(models.Model):
+    link = models.CharField("Link", max_length=40, primary_key=True)
+    role = models.BigIntegerField("Role ID")
+    nick = models.CharField("Nickname", max_length=40, null=True, default=None)
+
 # endregion
 
 # region Authentication
@@ -1231,11 +1221,6 @@ def days5():
 
 def random_token():
     return secrets.token_urlsafe(42)
-
-
-class RoleInvite(models.Model):
-    link = models.CharField("Link", max_length=40, primary_key=True)
-    role = models.BigIntegerField("Role ID")
 
 
 class DiscordUser(models.Model):
