@@ -18,8 +18,8 @@ logger = logging.getLogger("common_models.discord_models")
 
 try:
     from credentials import GUILD_ID
-except ModuleNotFoundError:
-    logger.error("Could not import GUILD_ID from credentials")
+except (ModuleNotFoundError, ImportError):
+    logger.warn("Could not import GUILD_ID from credentials")
     GUILD_ID = 0
 
 
