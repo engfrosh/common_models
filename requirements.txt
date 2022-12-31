@@ -1,0 +1,25 @@
+asgiref==3.6.0
+attrs==22.2.0
+certifi==2022.12.7
+charset-normalizer==2.1.1
+colorama==0.4.6
+Django==4.1.4
+exceptiongroup==1.1.0
+flake8==6.0.0
+idna==3.4
+iniconfig==1.1.1
+mccabe==0.7.0
+oauthlib==3.2.2
+packaging==22.0
+Pillow==9.3.0
+pluggy==1.0.0
+pyaccord @ git+https://github.com/grantmwilson/pyaccord.git@4f7ed6e3319957e45ac23f21e94908823eb91c22
+pycodestyle==2.10.0
+pyflakes==3.0.1
+pytest==7.2.0
+qrcode==7.3.1
+requests==2.28.1
+sqlparse==0.4.3
+tomli==2.0.1
+tzdata==2022.7
+urllib3==1.26.13

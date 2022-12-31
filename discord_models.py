@@ -9,13 +9,18 @@ from pyaccord.permissions import Permissions
 from typing import Iterable, List, Dict, Optional
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models.deletion import CASCADE
-import credentials
 from django.conf import settings
 from django.contrib.auth.models import User, Group
 import datetime
 import logging
 
 logger = logging.getLogger("common_models.discord_models")
+
+try:
+    from credentials import GUILD_ID
+except ModuleNotFoundError:
+    logger.error("Could not import GUILD_ID from credentials")
+    GUILD_ID = 0
 
 
 def get_client() -> Client:
@@ -311,9 +316,10 @@ class DiscordChannel(models.Model):
         raw_overwrites = api.get_channel_overwrites(self.id)
 
         overwrites = []
-        for ro in raw_overwrites:
-            o = DiscordOverwrite.overwrite_from_dict(ro)
-            overwrites.append(o)
+        if raw_overwrites:
+            for ro in raw_overwrites:
+                o = DiscordOverwrite.overwrite_from_dict(ro)
+                overwrites.append(o)
 
         return overwrites
 
@@ -426,4 +432,4 @@ class DiscordUser(models.Model):
 
         client = get_client()
 
-        client.remove_guild_member(user_id=self.id, guild_id=credentials.GUILD_ID)
+        client.remove_guild_member(user_id=self.id, guild_id=GUILD_ID)
