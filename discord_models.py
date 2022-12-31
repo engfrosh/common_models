@@ -330,14 +330,14 @@ class DiscordChannel(models.Model):
         return o_dict
 
     @staticmethod
-    def scavenger_updates_channels() -> List:
-        ChannelTag.objects.get_or_create(name="SCAVENGER_MANAGEMENT_UPDATES_CHANNEL")
+    def updates_channels() -> List:
+        ChannelTag.objects.get_or_create(name="MANAGEMENT_UPDATES_CHANNEL")
 
-        return list(DiscordChannel.objects.filter(tags__name="SCAVENGER_MANAGEMENT_UPDATES_CHANNEL"))
+        return list(DiscordChannel.objects.filter(tags__name="MANAGEMENT_UPDATES_CHANNEL"))
 
     @staticmethod
-    def send_to_scavenger_updates_channels(content) -> None:
-        for ch in DiscordChannel.scavenger_updates_channels():
+    def send_to_updates_channels(content) -> None:
+        for ch in DiscordChannel.updates_channels():
             ch.send(content=content)
 
     def send(self, content: str):

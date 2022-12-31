@@ -76,6 +76,7 @@ from .discord_models import DiscordOverwrite, ChannelTag, DiscordRole, DiscordGu
 from .data_models import UniversityProgram, UserDetails, FroshRole, BooleanSetting  # noqa: E402, F401
 from .auth_models import MagicLink  # noqa: E402, F401
 from .trade_models import TeamTradeUpActivity  # noqa: E402, F401
+from .ticket_models import Ticket, TicketComment  # noqa: E402, F401
 logger = logging.getLogger("common_models.models")
 
 
