@@ -190,13 +190,27 @@ class DiscordGuild(models.Model):
         raise Exception("Could not find a valid text channel to invite to.")
 
     def create_role(
-            self, name: Optional[str] = None, *, permissions: Optional[Iterable[Permissions]] = None) -> pyaccord.Role:
+            self, name: Optional[str] = None, *, permissions: Optional[Iterable[Permissions]] = None,
+            position: Optional[int] = None, color: Optional[int] = None) -> pyaccord.Role:
 
         client = get_client()
 
-        role = client.create_guild_role(self.id, name=name, permissions=permissions)
-
+        role = client.create_guild_role(self.id, name=name, permissions=permissions, color=color)
+        if position is not None:
+            client.set_guild_role_position(self.id, role.id, position)
         return role
+
+    def get_role(self, name):
+        client = get_client()
+        roles = client.get_guild_roles(self.id)
+        for role in roles:
+            if role.name == name:
+                return role
+        return None
+
+    def change_nick(self, user: int, nickname: Optional[str] = None):
+        client = get_client()
+        client.change_user_nickname(self.id, user, nickname=nickname)
 
     def add_role_to_member(self, discord_member_id: int, discord_role: DiscordRole | int) -> None:
 
