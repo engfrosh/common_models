@@ -1,12 +1,13 @@
 from django.db import models
 from datetime import datetime
-from django.contrib.postgres.fields import ArrayField
+
 
 class EuchreCard(models.Model):
     suit = models.CharField('Suit', max_length=1)
     rank = models.IntegerField('rank')
     player = models.ForeignKey('EuchrePlayer', related_name='card', on_delete=models.CASCADE, null=True)
     played = models.BooleanField('Played', default=False)
+
     @property
     def name(self):
         suits = {'H': '♥️', 'D': '♦️', 'C': '♣️', 'S': '♠️'}
@@ -15,6 +16,10 @@ class EuchreCard(models.Model):
             return suits[self.suit] + " " + ranks[self.rank]
         else:
             return suits[self.suit] + " " + str(self.rank)
+
+    def is_bower(self, trump):
+        opposites = {"D": "H", "H": "D", "C": "S", "S": "C"}
+        return (self.suit == trump or self.suit == opposites[trump]) and self.rank == 11
 
 
 class EuchreTrick(models.Model):
@@ -27,14 +32,19 @@ class EuchreTrick(models.Model):
 class EuchrePlayer(models.Model):
     id = models.PositiveBigIntegerField("Player's Discord ID", primary_key=True)
     team = models.ForeignKey('EuchreTeam',  on_delete=models.CASCADE, null=True)
-    wins = models.IntegerField('Wins', default=0)
-    losses = models.IntegerField('Losses', default=0)
-    
-    @property
+
     def can_follow_suit(self, game):
         trick = game.current_trick
+        trump = game.trump
+        opposites = {"D": "H", "H": "D", "C": "S", "S": "C"}
+        opp_trump = opposites[trump]
         opener = trick.opener
-        cards = list(EuchreCard.objects.filter(player=self, suit=opener.suit, played=False))
+        if opener is None:
+            return False
+        suit = opener.suit
+        if opener.rank == 11 and opener.suit == opp_trump:
+            suit = trump
+        cards = list(EuchreCard.objects.filter(player=self, suit=suit, played=False))
         if len(cards) > 0:
             return True
         return False
@@ -46,6 +56,7 @@ class EuchreTeam(models.Model):
     # Stores the player who is going alone if there is one
     going_alone = models.ForeignKey('EuchrePlayer', on_delete=models.CASCADE, null=True)
     tricks_won = models.IntegerField('Tricks Won', default=0)
+    points = models.IntegerField('Points', default=0)
 
     @property
     def is_going_alone(self):
@@ -67,13 +78,14 @@ class EuchreGame(models.Model):
     @property
     def is_completed(self) -> bool:
         return self.end is not None
-    
+
     def compute_dealers(self, current) -> EuchrePlayer:
         """Computes who the dealer should be after the next dealer, also used for declaring trumps"""
         dealer_team = current.team
         team_members = EuchrePlayer.objects.filter(team=dealer_team)
         new_dealer = team_members.exclude(id=current.id).first()
         return new_dealer
+
     def compute_selector(self) -> EuchrePlayer:
         selector = None
         if self.selector == self.dealer:
@@ -85,25 +97,24 @@ class EuchreGame(models.Model):
         else:
             selector = self.dealer
 
-        team = selector.team
         self.selector = selector
         self.save()
-        if team.is_going_alone and team.going_alone != selector:
-            selector = compute_selector()
+        if selector.team.is_going_alone and selector.team.going_alone != selector:
+            selector = self.compute_selector()
         return selector
 
     @property
     def points(self):
-        if winner.is_going_alone:
+        if self.winner.is_going_alone:
             # if they are going alone then they must be the declarer
-            if winner.tricks_won == 5:
+            if self.winner.tricks_won == 5:
                 return 4
             else:
                 return 1
-        if winner != declarer:
+        if self.winner != self.declarer:
             return 2
         else:
-            if winner.tricks_won == 5:
+            if self.winner.tricks_won == 5:
                 return 2
             else:
                 return 1
