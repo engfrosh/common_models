@@ -77,6 +77,8 @@ from .data_models import UniversityProgram, UserDetails, FroshRole, BooleanSetti
 from .auth_models import MagicLink  # noqa: E402, F401
 from .trade_models import TeamTradeUpActivity  # noqa: E402, F401
 from .ticket_models import Ticket, TicketComment  # noqa: E402, F401
+from .euchre_models import EuchrePlayer, EuchreTrick, EuchreTeam, EuchreCard  # noqa: E402, F401
+from .euchre_models import EuchreGame  # noqa: E402, F401
 logger = logging.getLogger("common_models.models")
 
 
