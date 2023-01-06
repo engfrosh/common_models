@@ -47,6 +47,10 @@ class EuchrePlayer(models.Model):
         cards = list(EuchreCard.objects.filter(player=self, suit=suit, played=False))
         if len(cards) > 0:
             return True
+        if suit == trump:
+            bower = list(EuchreCard.objects.filter(player=self, suit=opp_trump, rank=11, played=False))
+            if len(bower) > 0:
+                return True
         return False
 
 
