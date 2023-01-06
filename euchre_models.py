@@ -44,7 +44,8 @@ class EuchrePlayer(models.Model):
         suit = opener.suit
         if opener.rank == 11 and opener.suit == opp_trump:
             suit = trump
-        cards = list(EuchreCard.objects.filter(player=self, suit=suit, played=False))
+        # This excludes the left bower because it is considered the trump suit (handled below)
+        cards = list(EuchreCard.objects.filter(player=self, suit=suit, played=False).exclude(suit=opp_trump, rank=11))
         if len(cards) > 0:
             return True
         if suit == trump:
