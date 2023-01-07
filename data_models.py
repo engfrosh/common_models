@@ -65,3 +65,10 @@ class BooleanSetting(models.Model):
 
     def __str__(self) -> str:
         return f"<Setting {self.id}: {self.value} >"
+
+
+class Announcement(models.Model):
+    id = models.AutoField("Announcement ID", primary_key=True)
+    created = models.DateTimeField(auto_now=True)
+    title = models.CharField(max_length=200)
+    body = models.TextField()
