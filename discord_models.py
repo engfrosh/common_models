@@ -151,6 +151,8 @@ class DiscordGuild(models.Model):
         verbose_name = "Discord Guild"
         verbose_name_plural = "Discord Guilds"
         permissions = [
+            ("create_role", "Allows a user to create discord roles"),
+            ("create_channel", "Allows a user to create discord channels")
         ]
 
     def __str__(self) -> str:
@@ -302,7 +304,8 @@ class DiscordChannel(models.Model):
         """Discord Channel Model Meta information."""
 
         permissions = [
-            ("lock_channels", "Can lock or unlock discord channels.")
+            ("lock_channels", "Can lock or unlock discord channels."),
+            ("purge_channels", "Can purge a discord channel of all messages")
         ]
 
         verbose_name = "Discord Channel"
@@ -411,6 +414,16 @@ class RoleInvite(models.Model):
     link = models.CharField("Link", max_length=40, primary_key=True)
     role = models.BigIntegerField("Role ID")
     nick = models.CharField("Nickname", max_length=40, null=True, default=None)
+
+    class Meta:
+        """Discord Role Invite Model Meta information."""
+
+        permissions = [
+            ("create_invite", "Can create invites to the discord server")
+        ]
+
+        verbose_name = "Role Invite"
+        verbose_name_plural = "Role Invites"
 
 
 class DiscordUser(models.Model):
