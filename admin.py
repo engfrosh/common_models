@@ -7,7 +7,8 @@ from django.contrib import admin
 from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite, DiscordRole, \
     FroshRole, Puzzle, PuzzleGuess, PuzzleStream, Team, DiscordUser, MagicLink, \
     TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
-    UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild
+    UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild, Announcement, \
+    Ticket, TicketComment
 
 
 class BooleanSettingAdmin(admin.ModelAdmin):
@@ -36,6 +37,29 @@ class BooleanSettingAdmin(admin.ModelAdmin):
 
 admin.site.register(BooleanSetting, BooleanSettingAdmin)
 
+
+# region Ticket
+
+
+class TicketAdmin(admin.ModelAdmin):
+    pass
+
+
+class TicketCommentAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(Ticket, TicketAdmin)
+admin.site.register(TicketComment, TicketCommentAdmin)
+
+# region Announcement
+
+
+class AnnouncementAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(Announcement, AnnouncementAdmin)
 
 # region Discord
 
