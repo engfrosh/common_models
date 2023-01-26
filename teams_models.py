@@ -99,6 +99,9 @@ class Team(models.Model):
 
     @property
     def active_puzzles(self) -> List:
+        for perm in self.group.permissions.all():
+            if perm.codename == "bypass_scav_rules":
+                return list(md.Puzzle.objects.filter(enabled=True).order_by("order").all())
         active_puzzle_activities = filter(md.TeamPuzzleActivity._is_active,
                                           self._puzzle_activities_qs)
         return [apa.puzzle for apa in active_puzzle_activities]
