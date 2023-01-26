@@ -209,7 +209,8 @@ class Puzzle(models.Model):
 
         permissions = [
             ("guess_scavenger_puzzle", "Can guess for scavenger puzzle"),
-            ("manage_scav", "Can manage scav")
+            ("manage_scav", "Can manage scav"),
+            ("bypass_scav_rules", "Bypasses all scav rules")
         ]
 
         unique_together = [["order", "stream"]]
