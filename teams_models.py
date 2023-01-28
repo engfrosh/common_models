@@ -99,6 +99,9 @@ class Team(models.Model):
 
     @property
     def active_puzzles(self) -> List:
+        for perm in self.group.permissions.all():
+            if perm.codename == "bypass_scav_rules":
+                return list(md.Puzzle.objects.filter(enabled=True).order_by("order").all())
         active_puzzle_activities = filter(md.TeamPuzzleActivity._is_active,
                                           self._puzzle_activities_qs)
         return [apa.puzzle for apa in active_puzzle_activities]
@@ -111,8 +114,9 @@ class Team(models.Model):
 
     @property
     def verified_puzzles(self) -> List:
-        verified_puzzle_activities = filter(md.TeamPuzzleActivity._is_verified,
-                                            self._puzzle_activities_qs)
+        verified_puzzle_activities = filter(md.TeamPuzzleActivity._is_completed,
+                                            filter(md.TeamPuzzleActivity._is_verified,
+                                            self._puzzle_activities_qs))
         return [vpa.puzzle for vpa in verified_puzzle_activities]
 
     @property

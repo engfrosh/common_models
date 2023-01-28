@@ -209,7 +209,8 @@ class Puzzle(models.Model):
 
         permissions = [
             ("guess_scavenger_puzzle", "Can guess for scavenger puzzle"),
-            ("manage_scav", "Can manage scav")
+            ("manage_scav", "Can manage scav"),
+            ("bypass_scav_rules", "Bypasses all scav rules")
         ]
 
         unique_together = [["order", "stream"]]
@@ -282,7 +283,8 @@ class Puzzle(models.Model):
         correct = self.answer.lower() == guess.lower()
 
         if not correct:
-            logger.debug(f"Team {team} guess {guess} is not the answer to puzzle {self}, {self.answer.lower}")
+            answer = self.answer.lower()
+            logger.debug(f"Team {team} guess {guess} is not the answer to puzzle {self}, {answer}")
             return (correct, False, None, False)
 
         # Mark the question as correct
