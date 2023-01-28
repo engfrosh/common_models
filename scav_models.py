@@ -283,7 +283,8 @@ class Puzzle(models.Model):
         correct = self.answer.lower() == guess.lower()
 
         if not correct:
-            logger.debug(f"Team {team} guess {guess} is not the answer to puzzle {self}, {self.answer.lower}")
+            answer = self.answer.lower()
+            logger.debug(f"Team {team} guess {guess} is not the answer to puzzle {self}, {answer}")
             return (correct, False, None, False)
 
         # Mark the question as correct
