@@ -116,7 +116,7 @@ class Team(models.Model):
     def verified_puzzles(self) -> List:
         verified_puzzle_activities = filter(md.TeamPuzzleActivity._is_completed,
                                             filter(md.TeamPuzzleActivity._is_verified,
-                                            self._puzzle_activities_qs))
+                                                   self._puzzle_activities_qs))
         return [vpa.puzzle for vpa in verified_puzzle_activities]
 
     @property
