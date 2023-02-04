@@ -6,6 +6,7 @@ from django.db.models.deletion import CASCADE
 from typing import List, Optional
 from django.db.utils import IntegrityError
 from django.contrib.auth.models import User, Group
+from django_unixdatetimefield import UnixDateTimeField
 
 import common_models.models as md
 
@@ -40,7 +41,7 @@ class Team(models.Model):
 
     scavenger_team = models.BooleanField(default=True)
     scavenger_finished = models.BooleanField("Finished Scavenger", default=False)
-    scavenger_locked_out_until = models.DateTimeField(blank=True, null=True, default=None)
+    scavenger_locked_out_until = UnixDateTimeField(blank=True, null=True, default=None)
     scavenger_enabled_for_team = models.BooleanField(default=True)
 
     trade_up_team = models.BooleanField(default=True)
@@ -51,9 +52,9 @@ class Team(models.Model):
     coin_amount = models.BigIntegerField("Coin Amount", default=0)
     color = models.PositiveIntegerField("Hex Color Code", null=True, blank=True, default=None)
 
-    # hint_cooldown_until = models.DateTimeField("Hint Cooldown Until", blank=True, null=True)
+    # hint_cooldown_until = UnixDateTimeField("Hint Cooldown Until", blank=True, null=True)
     # last_hint = models.ForeignKey(Hint, blank=True, on_delete=PROTECT, null=True)
-    # last_hint_time = models.DateTimeField(blank=True, null=True)
+    # last_hint_time = UnixDateTimeField(blank=True, null=True)
     # finished = models.BooleanField("Finished Scavenger", default=False)
 
     class Meta:

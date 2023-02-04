@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from datetime import datetime
 from typing import List
+from django_unixdatetimefield import UnixDateTimeField
 
 
 class Ticket(models.Model):
@@ -15,7 +16,7 @@ class Ticket(models.Model):
         (3, 'CLOSED')
     ], default=0)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    opened = models.DateTimeField('Time Opened', default=datetime.now)
+    opened = UnixDateTimeField('Time Opened', default=datetime.now)
 
     @property
     def is_open(self) -> bool:
@@ -44,5 +45,5 @@ class TicketComment(models.Model):
     index = models.IntegerField('Index')
     ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    created = models.DateTimeField('Time Created', default=datetime.now)
+    created = UnixDateTimeField('Time Created', default=datetime.now)
     body = models.TextField('Body', max_length=3000)

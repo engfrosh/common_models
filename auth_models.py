@@ -11,7 +11,7 @@ import logging
 from io import BytesIO
 from django.utils.encoding import iri_to_uri
 from django.core.files import File
-
+from django_unixdatetimefield import UnixDateTimeField
 import common_models.models as md
 logger = logging.getLogger("common_models.auth_models")
 
@@ -19,7 +19,7 @@ logger = logging.getLogger("common_models.auth_models")
 class MagicLink(models.Model):
     token = models.CharField(max_length=64, default=md.random_token)
     user = models.OneToOneField(User, models.CASCADE)
-    expiry = models.DateTimeField(default=md.days5)
+    expiry = UnixDateTimeField(default=md.days5)
     delete_immediately = models.BooleanField(default=True)
 
     qr_code = models.ImageField(upload_to=md.magic_link_qr_code_path, blank=True)

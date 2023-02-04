@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models.deletion import CASCADE
 from django.contrib.auth.models import User, Group
+from django_unixdatetimefield import UnixDateTimeField
 
 
 class UniversityProgram(models.Model):
@@ -69,6 +70,6 @@ class BooleanSetting(models.Model):
 
 class Announcement(models.Model):
     id = models.AutoField("Announcement ID", primary_key=True)
-    created = models.DateTimeField(auto_now=True)
+    created = UnixDateTimeField(auto_now=True)
     title = models.CharField(max_length=200)
     body = models.TextField()

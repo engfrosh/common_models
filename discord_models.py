@@ -13,6 +13,7 @@ from django.conf import settings
 from django.contrib.auth.models import User, Group
 import datetime
 import logging
+from django_unixdatetimefield import UnixDateTimeField
 
 logger = logging.getLogger("common_models.discord_models")
 
@@ -434,7 +435,7 @@ class DiscordUser(models.Model):
     discriminator = models.IntegerField(blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, db_index=True)
     access_token = models.CharField(max_length=40, blank=True)
-    expiry = models.DateTimeField(blank=True, null=True)
+    expiry = UnixDateTimeField(blank=True, null=True)
     refresh_token = models.CharField(max_length=40, blank=True)
 
     class Meta:
