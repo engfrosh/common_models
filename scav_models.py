@@ -83,6 +83,14 @@ class VerificationPhoto(models.Model):
     datetime = models.DateTimeField(auto_now=True)
     photo = models.ImageField(upload_to=_puzzle_verification_photo_upload_path)
     approved = models.BooleanField(default=False)
+    
+    class Meta:
+        verbose_name = "Verification Photo"
+        verbose_name_plural = "Verification Photos"
+
+        permissions = [
+            ("photo_api", "Can create verification photos through the API"),
+        ]
 
     def approve(self) -> None:
         self.approved = True
