@@ -35,6 +35,9 @@ class UserDetails(models.Model):
 
         verbose_name = "User Details"
         verbose_name_plural = "Users' Details"
+        permissions = [
+            ("check_in", "Can manage user check in"),
+        ]
 
     def __str__(self) -> str:
         return f"{self.name} ({self.user.username})"
