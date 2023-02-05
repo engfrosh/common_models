@@ -413,7 +413,7 @@ class DiscordChannel(models.Model):
 
 class RoleInvite(models.Model):
     link = models.CharField("Link", max_length=40, primary_key=True)
-    role = models.BigIntegerField("Role ID")
+    role = models.CharField("Role IDs", max_length=200)
     nick = models.CharField("Nickname", max_length=40, null=True, default=None)
 
     class Meta:
