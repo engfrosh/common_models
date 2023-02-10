@@ -28,7 +28,7 @@ class PronounOption(models.Model):
 class Pronoun(models.Model):
     """Map a pronoun to a user"""
     name = models.CharField("Pronoun", max_length=64)
-    user = models.OneToOneField(User, on_delete=CASCADE)
+    user = models.ForeignKey(User, on_delete=CASCADE)
     order = models.IntegerField()
 
     class Meta:
