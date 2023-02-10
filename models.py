@@ -73,7 +73,7 @@ from .scav_models import _puzzle_verification_photo_upload_path  # noqa: E402, F
 from .scav_models import PuzzleGuess, TeamPuzzleActivity  # noqa: E402, F401
 from .discord_models import DiscordUser, RoleInvite, DiscordChannel, get_client  # noqa: E402, F401
 from .discord_models import DiscordOverwrite, ChannelTag, DiscordRole, DiscordGuild  # noqa: E402, F401
-from .discord_models import DiscordMessage
+from .discord_models import DiscordMessage  # noqa: E402, F401
 from .data_models import UniversityProgram, UserDetails, FroshRole, BooleanSetting  # noqa: E402, F401
 from .data_models import Announcement, Pronoun, PronounOption  # noqa: E402, F401
 from .auth_models import MagicLink  # noqa: E402, F401

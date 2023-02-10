@@ -21,7 +21,7 @@ class UniversityProgram(models.Model):
 
 
 class PronounOption(models.Model):
-    emote = models.CharField("Emote", max_length=64, unique=True)
+    emote = models.CharField("Emote", max_length=64)
     name = models.CharField("Name", max_length=64)
 
 
