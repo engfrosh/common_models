@@ -20,6 +20,21 @@ class UniversityProgram(models.Model):
         return self.name
 
 
+class PronounOption(models.Model):
+    emote = models.CharField("Emote", max_length=64, unique=True)
+    name = models.CharField("Name", max_length=64)
+
+
+class Pronoun(models.Model):
+    """Map a pronoun to a user"""
+    name = models.CharField("Pronoun", max_length=64)
+    user = models.OneToOneField(User, on_delete=CASCADE)
+    order = models.IntegerField()
+
+    class Meta:
+        unique_together = [["user", "order"]]
+
+
 class UserDetails(models.Model):
     """Details pertaining to users without fields in the default User."""
 
@@ -28,6 +43,7 @@ class UserDetails(models.Model):
     invite_email_sent = models.BooleanField("Invite Email Sent", default=False)
     checked_in = models.BooleanField("Checked In", default=False)
     shirt_size = models.CharField("Shirt Size", max_length=5, blank=True)
+    override_nick = models.CharField("Name Override", max_length=64, null=True, default=None)
 
     class Meta:
         """User Details Meta information."""
@@ -36,22 +52,20 @@ class UserDetails(models.Model):
         verbose_name_plural = "Users' Details"
         permissions = [
             ("check_in", "Can manage user check in"),
-            ("pronoun_group", "Indicated that a group is a pronoun")
         ]
 
     def __str__(self) -> str:
         return f"{self.name} ({self.user.username})"
 
     @property
-    def pronouns(self) -> list[Group]:
-        groups = self.user.groups
-        pronouns = []
-        for group in groups:
-            for p in group.permissions:
-                if p.codename == "common_models.pronoun_group":
-                    pronouns += [group]
-                    break
-        return pronouns
+    def pronouns(self) -> list[Pronoun]:
+        return list(Pronoun.objects.filter(user=self.user).order_by('order'))
+
+    @property
+    def next_pronoun(self) -> int:
+        if len(self.pronouns) == 0:
+            return 0
+        return self.pronouns[-1].order + 1
 
 
 class FroshRole(models.Model):

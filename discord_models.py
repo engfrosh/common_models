@@ -427,6 +427,11 @@ class RoleInvite(models.Model):
         verbose_name_plural = "Role Invites"
 
 
+class DiscordMessage(models.Model):
+    type = models.CharField("Type", max_length=64)
+    id = models.BigIntegerField("Channel ID", primary_key=True)
+
+
 class DiscordUser(models.Model):
     """Linking Discord user to website user."""
 
