@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models.deletion import CASCADE
 from django.contrib.auth.models import User, Group
+from django_unixdatetimefield import UnixDateTimeField
 
 
 class UniversityProgram(models.Model):
@@ -19,24 +20,52 @@ class UniversityProgram(models.Model):
         return self.name
 
 
+class PronounOption(models.Model):
+    emote = models.CharField("Emote", max_length=64)
+    name = models.CharField("Name", max_length=64)
+
+
+class Pronoun(models.Model):
+    """Map a pronoun to a user"""
+    name = models.CharField("Pronoun", max_length=64)
+    user = models.ForeignKey(User, on_delete=CASCADE)
+    order = models.IntegerField()
+
+    class Meta:
+        unique_together = [["user", "order"]]
+
+
 class UserDetails(models.Model):
     """Details pertaining to users without fields in the default User."""
 
     user = models.OneToOneField(User, on_delete=CASCADE, primary_key=True)
     name = models.CharField("Name", max_length=64)
-    pronouns = models.CharField("Pronouns", max_length=20, blank=True)
     invite_email_sent = models.BooleanField("Invite Email Sent", default=False)
     checked_in = models.BooleanField("Checked In", default=False)
     shirt_size = models.CharField("Shirt Size", max_length=5, blank=True)
+    override_nick = models.CharField("Name Override", max_length=64, null=True, default=None)
 
     class Meta:
         """User Details Meta information."""
 
         verbose_name = "User Details"
         verbose_name_plural = "Users' Details"
+        permissions = [
+            ("check_in", "Can manage user check in"),
+        ]
 
     def __str__(self) -> str:
         return f"{self.name} ({self.user.username})"
+
+    @property
+    def pronouns(self) -> list[Pronoun]:
+        return list(Pronoun.objects.filter(user=self.user).order_by('order'))
+
+    @property
+    def next_pronoun(self) -> int:
+        if len(self.pronouns) == 0:
+            return 0
+        return self.pronouns[-1].order + 1
 
 
 class FroshRole(models.Model):
@@ -69,6 +98,6 @@ class BooleanSetting(models.Model):
 
 class Announcement(models.Model):
     id = models.AutoField("Announcement ID", primary_key=True)
-    created = models.DateTimeField(auto_now=True)
+    created = UnixDateTimeField(auto_now=True)
     title = models.CharField(max_length=200)
     body = models.TextField()

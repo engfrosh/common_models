@@ -1,4 +1,5 @@
 from django.db import models
+from django_unixdatetimefield import UnixDateTimeField
 import logging
 from io import BytesIO
 from django.db.models.deletion import CASCADE, PROTECT, SET_NULL
@@ -24,7 +25,7 @@ def _puzzle_verification_photo_upload_path(instance, filename) -> str:
 class PuzzleGuess(models.Model):
     """Stores all the guesses for scavenger."""
 
-    datetime = models.DateTimeField(auto_now=True)
+    datetime = UnixDateTimeField(auto_now=True)
     value = models.CharField(max_length=100)
     activity = models.ForeignKey('TeamPuzzleActivity', on_delete=CASCADE)
 
@@ -81,9 +82,17 @@ class PuzzleStream(models.Model):
 class VerificationPhoto(models.Model):
     """Stores references to all the uploaded photos for scavenger puzzle verification."""
 
-    datetime = models.DateTimeField(auto_now=True)
+    datetime = UnixDateTimeField(auto_now=True)
     photo = models.ImageField(upload_to=_puzzle_verification_photo_upload_path)
     approved = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "Verification Photo"
+        verbose_name_plural = "Verification Photos"
+
+        permissions = [
+            ("photo_api", "Can create verification photos through the API"),
+        ]
 
     def approve(self) -> None:
         self.approved = True
@@ -99,8 +108,8 @@ class TeamPuzzleActivity(models.Model):
 
     team = models.ForeignKey(md.Team, on_delete=CASCADE)
     puzzle = models.ForeignKey('Puzzle', on_delete=CASCADE)
-    puzzle_start_at = models.DateTimeField(auto_now=True)
-    puzzle_completed_at = models.DateTimeField(null=True, blank=True, default=None)
+    puzzle_start_at = UnixDateTimeField(auto_now=True)
+    puzzle_completed_at = UnixDateTimeField(null=True, blank=True, default=None)
     verification_photo = models.ForeignKey(VerificationPhoto, on_delete=SET_NULL, null=True, blank=True, default=None)
 
     class Meta:
@@ -199,8 +208,8 @@ class Puzzle(models.Model):
     puzzle_file_download = models.BooleanField(default=False)
     puzzle_file_is_image = models.BooleanField(default=False)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = UnixDateTimeField(auto_now_add=True)
+    updated_at = UnixDateTimeField(auto_now=True)
 
     stream_branch = models.ForeignKey(PuzzleStream, on_delete=CASCADE, null=True, blank=True, default=None, related_name='branch_puzzle')
 

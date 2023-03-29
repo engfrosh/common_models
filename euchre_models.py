@@ -1,5 +1,6 @@
 from django.db import models
 from datetime import datetime
+from django_unixdatetimefield import UnixDateTimeField
 
 
 class EuchreCard(models.Model):
@@ -69,8 +70,8 @@ class EuchreTeam(models.Model):
 
 
 class EuchreGame(models.Model):
-    start = models.DateTimeField('Time Started', default=datetime.now)
-    end = models.DateTimeField('Time Finished', default=None, null=True)
+    start = UnixDateTimeField('Time Started', default=datetime.now)
+    end = UnixDateTimeField('Time Finished', default=None, null=True)
     dealer = models.ForeignKey('EuchrePlayer', on_delete=models.CASCADE)
     next_dealer = models.ForeignKey('EuchrePlayer', related_name='next_dealer', on_delete=models.CASCADE)
     selector = models.ForeignKey('EuchrePlayer', related_name='selector', on_delete=models.CASCADE, null=True)

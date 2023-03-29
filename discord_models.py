@@ -13,6 +13,7 @@ from django.conf import settings
 from django.contrib.auth.models import User, Group
 import datetime
 import logging
+from django_unixdatetimefield import UnixDateTimeField
 
 logger = logging.getLogger("common_models.discord_models")
 
@@ -412,7 +413,7 @@ class DiscordChannel(models.Model):
 
 class RoleInvite(models.Model):
     link = models.CharField("Link", max_length=40, primary_key=True)
-    role = models.BigIntegerField("Role ID")
+    role = models.CharField("Role IDs", max_length=200)
     nick = models.CharField("Nickname", max_length=40, null=True, default=None)
 
     class Meta:
@@ -426,6 +427,11 @@ class RoleInvite(models.Model):
         verbose_name_plural = "Role Invites"
 
 
+class DiscordMessage(models.Model):
+    type = models.CharField("Type", max_length=64)
+    id = models.BigIntegerField("Channel ID", primary_key=True)
+
+
 class DiscordUser(models.Model):
     """Linking Discord user to website user."""
 
@@ -434,7 +440,7 @@ class DiscordUser(models.Model):
     discriminator = models.IntegerField(blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, db_index=True)
     access_token = models.CharField(max_length=40, blank=True)
-    expiry = models.DateTimeField(blank=True, null=True)
+    expiry = UnixDateTimeField(blank=True, null=True)
     refresh_token = models.CharField(max_length=40, blank=True)
 
     class Meta:
