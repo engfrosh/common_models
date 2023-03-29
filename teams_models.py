@@ -209,7 +209,7 @@ class Team(models.Model):
         md.TeamPuzzleActivity.objects.filter(team=self.id).delete()
 
         # Unlock all questions
-        streams = md.PuzzleStream.objects.filter(enabled=True)
+        streams = md.PuzzleStream.objects.filter(enabled=True, default=True)
 
         for s in streams:
             puz = s.first_enabled_puzzle
@@ -234,7 +234,8 @@ class Team(models.Model):
             all_stream_puzzles = stream.all_enabled_puzzles
             for puz in all_stream_puzzles:
                 try:
-                    if not md.TeamPuzzleActivity.objects.get(team=self.id, puzzle=puz.id).is_verified:
+                    activity = md.TeamPuzzleActivity.objects.get(team=self.id, puzzle=puz.id)
+                    if not activity.is_verified or not activity.is_completed:
                         return False
                 except md.TeamPuzzleActivity.DoesNotExist:
                     return False

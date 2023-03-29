@@ -40,6 +40,7 @@ class PuzzleStream(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100, unique=True)
     enabled = models.BooleanField(default=True)
+    default = models.BooleanField(default=True)
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -201,6 +202,8 @@ class Puzzle(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    stream_branch = models.ForeignKey(PuzzleStream, on_delete=CASCADE, null=True, blank=True, default=None, related_name='branch_puzzle')
+
     # teams = models.ManyToManyField(Team, through="TeamPuzzleActivity")
 
     class Meta:
@@ -305,6 +308,9 @@ class Puzzle(models.Model):
 
         # Otherwise if correct check if done scavenger and if not increment question
         next_puzzle = self.stream.get_next_enabled_puzzle(self)
+        if self.stream_branch is not None:
+            branch_activity = TeamPuzzleActivity(team=team, puzzle=self.stream_branch.first_enabled_puzzle)
+            branch_activity.save()
         logger.debug(f"Next puzzle for team {team} is {next_puzzle}")
 
         if not next_puzzle:
