@@ -211,7 +211,7 @@ class Puzzle(models.Model):
     created_at = UnixDateTimeField(auto_now_add=True)
     updated_at = UnixDateTimeField(auto_now=True)
 
-    stream_branch = models.ForeignKey(PuzzleStream, on_delete=CASCADE, null=True, blank=True, default=None, related_name='branch_puzzle')
+    stream_branch = models.ForeignKey(PuzzleStream, on_delete=CASCADE, null=True, blank=True, default=None, related_name='branch_puzzle')  # noqa: E501
 
     # teams = models.ManyToManyField(Team, through="TeamPuzzleActivity")
 
