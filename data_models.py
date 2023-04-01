@@ -43,7 +43,7 @@ class UserDetails(models.Model):
     invite_email_sent = models.BooleanField("Invite Email Sent", default=False)
     checked_in = models.BooleanField("Checked In", default=False)
     shirt_size = models.CharField("Shirt Size", max_length=5, blank=True)
-    override_nick = models.CharField("Name Override", max_length=64, null=True, default=None)
+    override_nick = models.CharField("Name Override", max_length=64, null=True, default=None, blank=True)
 
     class Meta:
         """User Details Meta information."""
