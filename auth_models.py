@@ -24,6 +24,13 @@ class MagicLink(models.Model):
 
     qr_code = models.ImageField(upload_to=md.magic_link_qr_code_path, blank=True)
 
+    class Meta:
+        """Magic Link Meta information."""
+
+        permissions = [
+            ("view_links", "Can view magic links"),
+        ]
+
     def link_used(self) -> bool:
         """Returns True if link can still be used, or False if not."""
         if self.delete_immediately:
