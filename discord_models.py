@@ -436,7 +436,7 @@ class DiscordUser(models.Model):
     """Linking Discord user to website user."""
 
     id = models.BigIntegerField("Discord ID", primary_key=True)
-    discord_username = models.CharField(max_length=100, blank=True)
+    discord_username = models.CharField(max_length=500, blank=True)
     discriminator = models.IntegerField(blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, db_index=True)
     access_token = models.CharField(max_length=40, blank=True)
