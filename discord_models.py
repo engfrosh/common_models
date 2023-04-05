@@ -448,6 +448,10 @@ class DiscordUser(models.Model):
 
         verbose_name = "Discord User"
         verbose_name_plural = "Discord Users"
+        permissions = [
+            ("view_discord_nicks", "Can view Discord info for users"),
+            ("manage_discord_nicks", "Can manage Discord info for users")
+        ]
 
     def __str__(self) -> str:
         return f"{self.discord_username}#{self.discriminator}"
