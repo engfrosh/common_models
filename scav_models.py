@@ -95,6 +95,12 @@ class VerificationPhoto(models.Model):
         ]
 
     def approve(self) -> None:
+        activity = TeamPuzzleActivity.filter(verification_photo=self).first()
+        puzzle = activity.puzzle
+        team = activity.team
+        if puzzle.stream_branch is not None:
+            branch_activity = TeamPuzzleActivity(team=team, puzzle=puzzle.stream_branch.first_enabled_puzzle)
+            branch_activity.save()
         self.approved = True
         self.save()
         try:
@@ -330,8 +336,10 @@ class Puzzle(models.Model):
                         ", awaiting a photo upload.")
 
             return (correct, True, None, False)
-
-        TeamPuzzleActivity(team=team, puzzle=next_puzzle).save()
+        try:
+            TeamPuzzleActivity(team=team, puzzle=next_puzzle).save()
+        except Exception:
+            pass
         for ch in discord_channels:
             ch.send(f"{team.display_name} has completed puzzle {self.name}, moving on to puzzle {next_puzzle.name}")
 

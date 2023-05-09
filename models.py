@@ -105,7 +105,7 @@ def initialize_database() -> None:
 
 def initialize_scav() -> None:
     for team in Team.objects.all():
-        streams = PuzzleStream.objects.filter(enabled=True)
+        streams = PuzzleStream.objects.filter(enabled=True, default=True)
 
         for s in streams:
             puz = s.first_enabled_puzzle

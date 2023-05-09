@@ -4,7 +4,6 @@ import datetime
 import logging
 from django.db.models.deletion import CASCADE
 from typing import List, Optional
-from django.db.utils import IntegrityError
 from django.contrib.auth.models import User, Group
 from django_unixdatetimefield import UnixDateTimeField
 
@@ -271,16 +270,15 @@ class Team(models.Model):
                     if puz_disabled or puz_verified:
                         # Move team to next puzzle
                         next_puzzle = s.get_next_enabled_puzzle(puzzle=puz)
-
+                        print(s, puz)
                         if not next_puzzle:
                             if self.check_if_finished_scavenger():
                                 return
-
+                            continue
                         try:
                             md.TeamPuzzleActivity(team=self, puzzle=next_puzzle).save()
-                        except IntegrityError as e:
-                            logger.exception("Integrity error trying to set team to next question")
-                            raise e
+                        except Exception:
+                            pass  # Activity already exists
 
         return
 
