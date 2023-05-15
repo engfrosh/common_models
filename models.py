@@ -32,6 +32,10 @@ def puzzle_path(instance, filename):
     return random_path(instance, filename, SCAVENGER_DIR + PUZZLE_DIR)
 
 
+def logo_path(instance, filename):
+    return random_path(instance, filename, SCAVENGER_DIR + LOGO_DIR)
+
+
 def scavenger_qr_code_path(instance, filename):
     return random_path(instance, filename, SCAVENGER_DIR + QR_CODE_DIR)
 
@@ -88,6 +92,7 @@ logger = logging.getLogger("common_models.models")
 SCAVENGER_DIR = "scavenger/"
 PUZZLE_DIR = "puzzles/"
 QR_CODE_DIR = "qr_codes/"
+LOGO_DIR = "team_logos/"
 
 FILE_RANDOM_LENGTH = 128
 

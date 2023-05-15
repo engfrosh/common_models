@@ -51,6 +51,7 @@ class Team(models.Model):
     coin_amount = models.BigIntegerField("Coin Amount", default=0)
     color = models.PositiveIntegerField("Hex Color Code", null=True, blank=True, default=None)
 
+    logo = models.ImageField(upload_to=md.logo_path, blank=True, null=True)
     # hint_cooldown_until = UnixDateTimeField("Hint Cooldown Until", blank=True, null=True)
     # last_hint = models.ForeignKey(Hint, blank=True, on_delete=PROTECT, null=True)
     # last_hint_time = UnixDateTimeField(blank=True, null=True)
