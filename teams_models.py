@@ -52,6 +52,7 @@ class Team(models.Model):
     color = models.PositiveIntegerField("Hex Color Code", null=True, blank=True, default=None)
 
     logo = models.ImageField(upload_to=md.logo_path, blank=True, null=True)
+    scav_tree = models.ImageField(upload_to=md.tree_path, blank=True, null=True)
     # hint_cooldown_until = UnixDateTimeField("Hint Cooldown Until", blank=True, null=True)
     # last_hint = models.ForeignKey(Hint, blank=True, on_delete=PROTECT, null=True)
     # last_hint_time = UnixDateTimeField(blank=True, null=True)
@@ -223,6 +224,8 @@ class Team(models.Model):
         self.scavenger_finished = False
         self.scavenger_locked_out_until = None
         self.save()
+        from scavenger.views import update_tree
+        update_tree(self)
 
         # If hints are added they also need to be reset here
 

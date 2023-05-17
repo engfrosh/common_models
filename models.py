@@ -56,6 +56,9 @@ def question_path(instance, filename):
     return puzzle_path(instance, filename)
 
 
+def tree_path(instance, filename):
+    return random_path(instance, filename, SCAVENGER_DIR + TREE_DIR)
+
 # region Authentication
 
 
@@ -93,6 +96,7 @@ SCAVENGER_DIR = "scavenger/"
 PUZZLE_DIR = "puzzles/"
 QR_CODE_DIR = "qr_codes/"
 LOGO_DIR = "team_logos/"
+TREE_DIR = "scav_trees/"
 
 FILE_RANDOM_LENGTH = 128
 

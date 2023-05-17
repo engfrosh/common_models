@@ -95,7 +95,7 @@ class VerificationPhoto(models.Model):
         ]
 
     def approve(self) -> None:
-        activity = TeamPuzzleActivity.filter(verification_photo=self).first()
+        activity = TeamPuzzleActivity.objects.filter(verification_photo=self).first()
         puzzle = activity.puzzle
         team = activity.team
         if puzzle.stream_branch is not None:
@@ -105,6 +105,8 @@ class VerificationPhoto(models.Model):
         self.save()
         try:
             TeamPuzzleActivity.objects.get(verification_photo=self).team.refresh_scavenger_progress()
+            from scavenger.views import update_tree
+            update_tree(team)
         except TeamPuzzleActivity.DoesNotExist:
             pass
 
@@ -309,7 +311,6 @@ class Puzzle(models.Model):
         logger.debug(f"Team {team} guess {guess} is correct for puzzle {self}")
 
         activity.mark_completed()
-
         md.ChannelTag.objects.get_or_create(name="SCAVENGER_MANAGEMENT_UPDATES_CHANNEL")
         discord_channels = md.DiscordChannel.objects.filter(tags__name="SCAVENGER_MANAGEMENT_UPDATES_CHANNEL")
 
