@@ -52,7 +52,7 @@ class Team(models.Model):
     color = models.PositiveIntegerField("Hex Color Code", null=True, blank=True, default=None)
 
     logo = models.ImageField(upload_to=md.logo_path, blank=True, null=True)
-    scav_tree = models.ImageField(upload_to=md.tree_path, blank=True, null=True)
+    scav_tree = models.FileField(upload_to=md.tree_path, blank=True, null=True)
     # hint_cooldown_until = UnixDateTimeField("Hint Cooldown Until", blank=True, null=True)
     # last_hint = models.ForeignKey(Hint, blank=True, on_delete=PROTECT, null=True)
     # last_hint_time = UnixDateTimeField(blank=True, null=True)
