@@ -91,11 +91,16 @@ class DiscordRole(models.Model):
     """Relates a Django group to a discord role."""
 
     role_id = models.PositiveBigIntegerField("Discord Role ID", primary_key=True)
-    group_id = models.OneToOneField(Group, CASCADE)
+    group_id = models.ForeignKey(Group, CASCADE)
+    secondary_group_id = models.ForeignKey(Group, CASCADE, null=True, blank=True, related_name="secondary_group")
 
     @property
     def group(self) -> Group:
         return self.group_id
+
+    @property
+    def secondary_group(self) -> Group:
+        return self.secondary_group_id
 
     class Meta:
         """Meta information for Discord roles."""
