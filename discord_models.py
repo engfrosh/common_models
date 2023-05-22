@@ -289,6 +289,7 @@ class DiscordChannel(models.Model):
     id = models.PositiveBigIntegerField("Discord Channel ID", primary_key=True)
     name = models.CharField("Discord Channel Name", max_length=100, unique=False, blank=True, default="")
     tags = models.ManyToManyField(ChannelTag, blank=True)
+    team = models.ForeignKey('Team', blank=True, null=True, on_delete=CASCADE)
     type = models.IntegerField("Channel Type", choices=[
         (0, "GUILD_TEXT"),
         (1, "DM"),
