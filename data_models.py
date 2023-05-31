@@ -44,6 +44,8 @@ class UserDetails(models.Model):
     checked_in = models.BooleanField("Checked In", default=False)
     shirt_size = models.CharField("Shirt Size", max_length=5, blank=True)
     override_nick = models.CharField("Name Override", max_length=64, null=True, default=None, blank=True)
+    int_frosh_id = models.IntegerField(unique=False, default=0)
+    waiver_completed = models.BooleanField("Waiver Completed", default=False)
 
     class Meta:
         """User Details Meta information."""
@@ -66,6 +68,32 @@ class UserDetails(models.Model):
         if len(self.pronouns) == 0:
             return 0
         return self.pronouns[-1].order + 1
+
+    @property
+    def frosh_id(self) -> int:
+        if self.int_frosh_id == 0:
+            self.generate_frosh_id()
+        return self.int_frosh_id
+
+    def generate_checksum(self, id) -> int:
+        checksum = 0  # Basically just a Luhn checksum
+        double = True
+        while id > 0:
+            if double:
+                checksum += (id % 10) * 2
+            else:
+                checksum += id % 10
+            id = id // 10
+            double = not double
+        print("Checksum:", checksum % 10, checksum)
+        return checksum % 10
+
+    def generate_frosh_id(self) -> None:
+        id = 70000 + self.user.id
+        checksum = self.generate_checksum(id)
+        id = id * 10 + checksum
+        self.int_frosh_id = id
+        self.save()
 
 
 class FroshRole(models.Model):
