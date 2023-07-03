@@ -31,10 +31,6 @@ class VirtualTeam(models.Model):
 class Team(models.Model):
     """Model of frosh team."""
 
-    # @staticmethod
-    # def initialize_all_team_scavenger_questions():
-    #     for t in Team.objects.all():
-
     display_name = models.CharField("Team Name", max_length=64, unique=True)
     group = models.OneToOneField(Group, CASCADE, primary_key=True)
 
@@ -53,10 +49,6 @@ class Team(models.Model):
 
     logo = models.ImageField(upload_to=md.logo_path, blank=True, null=True)
     scav_tree = models.FileField(upload_to=md.tree_path, blank=True, null=True)
-    # hint_cooldown_until = UnixDateTimeField("Hint Cooldown Until", blank=True, null=True)
-    # last_hint = models.ForeignKey(Hint, blank=True, on_delete=PROTECT, null=True)
-    # last_hint_time = UnixDateTimeField(blank=True, null=True)
-    # finished = models.BooleanField("Finished Scavenger", default=False)
 
     class Meta:
         verbose_name = "Team"
