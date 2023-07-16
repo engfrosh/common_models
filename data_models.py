@@ -85,7 +85,6 @@ class UserDetails(models.Model):
                 checksum += id % 10
             id = id // 10
             double = not double
-        print("Checksum:", checksum % 10, checksum)
         return checksum % 10
 
     def generate_frosh_id(self) -> None:
