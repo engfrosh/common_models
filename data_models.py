@@ -2,6 +2,14 @@ from django.db import models
 from django.db.models.deletion import CASCADE
 from django.contrib.auth.models import User, Group
 from django_unixdatetimefield import UnixDateTimeField
+import common_models.models as md
+
+
+class InclusivityPage(models.Model):
+    name = models.CharField("Name", max_length=128)
+    permissions = models.IntegerField()
+    open_time = UnixDateTimeField()
+    file = models.FileField(upload_to=md.inclusivity_path)
 
 
 class UniversityProgram(models.Model):
