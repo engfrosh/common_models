@@ -12,6 +12,30 @@ class InclusivityPage(models.Model):
     file = models.FileField(upload_to=md.inclusivity_path)
 
 
+class FacilShift(models.Model):
+    id = models.AutoField("Shift ID", primary_key=True)
+    name = models.CharField("Name", max_length=128)
+    desc = models.CharField("Description", max_length=1000)
+    flags = models.CharField("Flags", max_length=5)
+    start = UnixDateTimeField(null=True)
+    end = UnixDateTimeField(null=True)
+    max_facils = models.IntegerField()
+    class Meta:
+        """Facil Shift Meta information."""
+
+        verbose_name = "Facil Shift"
+        verbose_name_plural = "Facil Shifts"
+        permissions = [
+            ("facil_signup", "Can sign up for shifts"),
+        ]
+
+
+
+class FacilShiftSignup(models.Model):
+    user = models.ForeignKey(User, on_delete=CASCADE)
+    shift = models.ForeignKey(FacilShift, on_delete=CASCADE)
+
+
 class UniversityProgram(models.Model):
     """Map a role as a course program."""
 
