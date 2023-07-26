@@ -30,6 +30,10 @@ class FacilShift(models.Model):
             ("facil_signup", "Can sign up for shifts"),
         ]
 
+    @property
+    def facil_count(self) -> int:
+        return len(FacilShiftSignup.objects.filter(shift=self))
+
 
 class FacilShiftSignup(models.Model):
     user = models.ForeignKey(User, on_delete=CASCADE)
