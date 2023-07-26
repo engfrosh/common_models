@@ -20,6 +20,7 @@ class FacilShift(models.Model):
     start = UnixDateTimeField(null=True)
     end = UnixDateTimeField(null=True)
     max_facils = models.IntegerField()
+
     class Meta:
         """Facil Shift Meta information."""
 
@@ -28,7 +29,6 @@ class FacilShift(models.Model):
         permissions = [
             ("facil_signup", "Can sign up for shifts"),
         ]
-
 
 
 class FacilShiftSignup(models.Model):
