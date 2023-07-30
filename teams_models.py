@@ -49,6 +49,7 @@ class Team(models.Model):
 
     logo = models.ImageField(upload_to=md.logo_path, blank=True, null=True)
     scav_tree = models.FileField(upload_to=md.tree_path, blank=True, null=True)
+    free_hints = models.IntegerField(default=0)
 
     class Meta:
         verbose_name = "Team"

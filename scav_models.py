@@ -330,6 +330,8 @@ class Puzzle(models.Model):
         logger.debug(f"Next puzzle for team {team} is {next_puzzle}")
 
         if not next_puzzle:
+            team.free_hints += 1
+            team.save()
             team.check_if_finished_scavenger()
 
             for ch in discord_channels:
