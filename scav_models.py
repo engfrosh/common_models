@@ -11,6 +11,7 @@ import qrcode.constants
 import qrcode.image.svg
 from qrcode.image.styledpil import StyledPilImage
 from django.core.files import File
+from PIL import Image, ImageDraw, ImageFont
 
 import common_models.models as md
 logger = logging.getLogger("common_models.scav_models")
@@ -362,6 +363,18 @@ class Puzzle(models.Model):
             img = qr.make_image(image_factory=StyledPilImage, embeded_image_path=STYLE_IMAGE_PATH)
         else:
             img = qr.make_image()
-        img.save(blob, "PNG")
+
+        width = img.size[0]
+        height = img.size[1]
+        font = ImageFont.truetype("files/static/font.ttf", 40)
+        with_text = Image.new(mode="RGB", size=(width, height + 50))
+        draw = ImageDraw.Draw(with_text)
+        draw.rectangle([(0, 0), with_text.size], fill=(255, 255, 255))
+        with_text.paste(img, (0, 0))
+        draw.text((width/2-font.getlength(self.answer)/2, height - 30),
+                  self.answer, align="center", fill=(0, 0, 0), font=font)
+
+        with_text.save(blob, "PNG")
+
         self.qr_code.save("QRCode.png", File(blob))
         self.save()
