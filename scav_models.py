@@ -161,7 +161,7 @@ class TeamPuzzleActivity(models.Model):
 
     def mark_completed(self) -> None:
 
-        logger.debug(f"Marking puzzle {self.puzzle} completed for team {self.team}")
+        logger.info(f"Marking puzzle {self.puzzle} completed for team {self.team}")
 
         if self.puzzle_completed_at:
             logger.warning(f"Puzzle {self.puzzle} already completed for team {self.team}")
@@ -170,7 +170,7 @@ class TeamPuzzleActivity(models.Model):
         self.puzzle_completed_at = datetime.datetime.now()
         self.save()
 
-        logger.debug(f"Puzzle {self.puzzle} marked as completed for team {self.team} at {self.puzzle_completed_at}")
+        logger.info(f"Puzzle {self.puzzle} marked as completed for team {self.team} at {self.puzzle_completed_at}")
 
     @property
     def is_active(self) -> bool:
@@ -290,26 +290,26 @@ class Puzzle(models.Model):
         Will move team to next question if it is correct or complete scavenger if appropriate.
         """
 
-        logger.debug(f"Checking team guess for team {team} with guess: {guess}")
+        logger.info(f"Checking team guess for team {team} with guess: {guess}")
 
         activity = TeamPuzzleActivity.objects.get(team=team.id, puzzle=self.id)
-        logger.debug(f"Got current puzzle activity for team {team}: {activity}")
+        logger.info(f"Got current puzzle activity for team {team}: {activity}")
 
         # Create a guess object
         pg = PuzzleGuess(value=guess, activity=activity)
         pg.save()
-        logger.debug(f"Saved puzzle guess for team {team} on puzzle {self}: {pg}")
+        logger.info(f"Saved puzzle guess for team {team} on puzzle {self}: {pg}")
 
         # Check the answer
         correct = self.answer.lower() == guess.lower()
 
         if not correct:
             answer = self.answer.lower()
-            logger.debug(f"Team {team} guess {guess} is not the answer to puzzle {self}, {answer}")
+            logger.info(f"Team {team} guess {guess} is not the answer to puzzle {self}, {answer}")
             return (correct, False, None, False)
 
         # Mark the question as correct
-        logger.debug(f"Team {team} guess {guess} is correct for puzzle {self}")
+        logger.info(f"Team {team} guess {guess} is correct for puzzle {self}")
 
         activity.mark_completed()
         md.ChannelTag.objects.get_or_create(name="SCAVENGER_MANAGEMENT_UPDATES_CHANNEL")
@@ -328,7 +328,7 @@ class Puzzle(models.Model):
         if self.stream_branch is not None:
             branch_activity = TeamPuzzleActivity(team=team, puzzle=self.stream_branch.first_enabled_puzzle)
             branch_activity.save()
-        logger.debug(f"Next puzzle for team {team} is {next_puzzle}")
+        logger.info(f"Next puzzle for team {team} is {next_puzzle}")
 
         if not next_puzzle:
             team.free_hints += 1

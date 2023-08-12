@@ -244,7 +244,7 @@ class Team(models.Model):
     def refresh_scavenger_progress(self) -> None:
         """Moves team along if verified on a puzzle or a puzzle has been disabled."""
 
-        logger.debug(f"Refreshing scavenger progress for team {self}")
+        logger.info(f"Refreshing scavenger progress for team {self}")
 
         if self.scavenger_finished:
             return
