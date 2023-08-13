@@ -46,14 +46,16 @@ admin.site.register(InclusivityPage, InclusivityPageAdmin)
 
 
 class FacilShiftAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('name', 'desc')
+    search_fields = ('name', 'desc')
 
 
 admin.site.register(FacilShift, FacilShiftAdmin)
 
 
 class FacilShiftSignupAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('shift', 'user')
+    search_fields = ('shift__name', 'user__username')
 
 
 admin.site.register(FacilShiftSignup, FacilShiftSignupAdmin)
