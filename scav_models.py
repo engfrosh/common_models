@@ -366,7 +366,7 @@ class Puzzle(models.Model):
 
         width = img.size[0]
         height = img.size[1]
-        font = ImageFont.truetype("files/static/font.ttf", 40)
+        font = ImageFont.truetype(settings.STATICFILES_DIRS[0]+"/font.ttf", 40)
         with_text = Image.new(mode="RGB", size=(width, height + 50))
         draw = ImageDraw.Draw(with_text)
         draw.rectangle([(0, 0), with_text.size], fill=(255, 255, 255))
