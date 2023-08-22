@@ -82,6 +82,8 @@ class UserDetails(models.Model):
     override_nick = models.CharField("Name Override", max_length=64, null=True, default=None, blank=True)
     int_frosh_id = models.IntegerField(unique=False, default=0)
     waiver_completed = models.BooleanField("Waiver Completed", default=False)
+    prc_completed = models.BooleanField("PRC Completed", default=False)
+    training_completed = models.BooleanField("Training Completed", default=False)
 
     class Meta:
         """User Details Meta information."""
