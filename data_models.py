@@ -123,7 +123,7 @@ class UserDetails(models.Model):
         for g in frosh_groups:
             names += [g.name]
         role = groups.filter(name__in=names).first()
-        if role == None:
+        if role is None:
             return False
         if role.name == "Frosh":
             if not self.waiver_completed:
@@ -150,7 +150,7 @@ class UserDetails(models.Model):
         for g in frosh_groups:
             names += [g.name]
         role = groups.filter(name__in=names).first()
-        if role == None:
+        if role is None:
             return "ERROR"
         reason = ""
         if role.name == "Frosh":
