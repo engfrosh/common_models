@@ -83,7 +83,15 @@ class UserDetails(models.Model):
     int_frosh_id = models.IntegerField(unique=False, default=0)
     waiver_completed = models.BooleanField("Waiver Completed", default=False)
     prc_completed = models.BooleanField("PRC Completed", default=False)
-    training_completed = models.BooleanField("Training Completed", default=False)
+    brightspace_completed = models.BooleanField("Brightspace Training Completed", default=False)
+    training_completed = models.BooleanField("In Person Training Completed", default=False)
+    hardhat = models.BooleanField("Hardhat Requested", default=False)
+    hardhat_paid = models.BooleanField("Hardhat Paid", default=False)
+    breakfast = models.BooleanField("Breakfast Requested", default=False)
+    breakfast_paid = models.BooleanField("Breakfast Paid", default=False)
+    rafting = models.BooleanField("Rafting Requested", default=False)
+    rafting_paid = models.BooleanField("Rafting Paid", default=False)
+    contract = models.BooleanField("Contract Signed", default=False)
 
     class Meta:
         """User Details Meta information."""
