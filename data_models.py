@@ -116,6 +116,66 @@ class UserDetails(models.Model):
         return self.pronouns[-1].order + 1
 
     @property
+    def can_check_in(self) -> bool:
+        groups = self.user.groups
+        frosh_groups = FroshRole.objects.all()
+        names = []
+        for g in frosh_groups:
+            names += [g.name]
+        role = groups.filter(name__in=names).first()
+        if role == None:
+            return False
+        if role.name == "Frosh":
+            if not self.waiver_completed:
+                return False
+            return True
+        else:
+            if not self.waiver_completed or not self.prc_completed or not self.contract:
+                return False
+            elif not self.brightspace_completed or not self.training_completed:
+                return False
+            elif self.hardhat and not self.hardhat_paid:
+                return False
+            elif self.breakfast and not self.breakfast_paid:
+                return False
+            elif self.rafting and not self.rafting_paid:
+                return False
+            return True
+
+    @property
+    def check_in_reason(self) -> bool:
+        groups = self.user.groups
+        frosh_groups = FroshRole.objects.all()
+        names = []
+        for g in frosh_groups:
+            names += [g.name]
+        role = groups.filter(name__in=names).first()
+        if role == None:
+            return "ERROR"
+        reason = ""
+        if role.name == "Frosh":
+            if not self.waiver_completed:
+                reason += "Waiver "
+        else:
+            if not self.waiver_completed:
+                reason += "Waiver  "
+            elif not self.prc_completed:
+                reason += "PRC  "
+            elif not self.contract:
+                reason += "Contract "
+            elif not self.brightspace_completed:
+                reason += "Brightspace "
+            elif not self.training_completed:
+                reason += "Training "
+            elif self.hardhat and not self.hardhat_paid:
+                reason += "Hardhat "
+            elif self.breakfast and not self.breakfast_paid:
+                reason += "Breakfast "
+            elif self.rafting and not self.rafting_paid:
+                reason += "Rafting "
+        return reason
+
+    @property
     def frosh_id(self) -> int:
         if self.int_frosh_id == 0:
             self.generate_frosh_id()
