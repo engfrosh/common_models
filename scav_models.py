@@ -364,14 +364,19 @@ class Puzzle(models.Model):
         else:
             img = qr.make_image()
 
-        width = img.size[0]
+        orig_width = img.size[0]
         height = img.size[1]
         font = ImageFont.truetype(settings.STATICFILES_DIRS[0]+"/font.ttf", 40)
+        text_len = font.getlength(self.answer)
+        width = int(max(orig_width, text_len + 50))
+        offset = 0
+        if text_len + 50 > orig_width:
+            offset = int((text_len + 50 - orig_width)/2)
         with_text = Image.new(mode="RGB", size=(width, height + 50))
         draw = ImageDraw.Draw(with_text)
         draw.rectangle([(0, 0), with_text.size], fill=(255, 255, 255))
-        with_text.paste(img, (0, 0))
-        draw.text((width/2-font.getlength(self.answer)/2, height - 30),
+        with_text.paste(img, (offset, 0))
+        draw.text((width/2-text_len/2, height - 30),
                   self.answer, align="center", fill=(0, 0, 0), font=font)
 
         with_text.save(blob, "PNG")
