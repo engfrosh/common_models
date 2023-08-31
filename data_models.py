@@ -92,6 +92,7 @@ class UserDetails(models.Model):
     rafting = models.BooleanField("Rafting Requested", default=False)
     rafting_paid = models.BooleanField("Rafting Paid", default=False)
     contract = models.BooleanField("Contract Signed", default=False)
+    allergies = models.CharField("Allergies", max_length=128, null=True, blank=True)
 
     class Meta:
         """User Details Meta information."""
