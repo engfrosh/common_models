@@ -131,9 +131,9 @@ class UserDetails(models.Model):
             return True
         else:
             # if not self.waiver_completed or not self.prc_completed or not self.contract:
-            if not self.prc_completed or not self.contract:
-                return False
-            elif not self.brightspace_completed:
+            # if not self.prc_completed or not self.contract:
+            #    return False
+            if not self.brightspace_completed:
                 return False
             elif self.hardhat and not self.hardhat_paid:
                 return False
