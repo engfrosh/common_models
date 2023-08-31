@@ -130,9 +130,10 @@ class UserDetails(models.Model):
                 return False
             return True
         else:
-            if not self.waiver_completed or not self.prc_completed or not self.contract:
+            # if not self.waiver_completed or not self.prc_completed or not self.contract:
+            if not self.prc_completed or not self.contract:
                 return False
-            elif not self.brightspace_completed or not self.training_completed:
+            elif not self.brightspace_completed:
                 return False
             elif self.hardhat and not self.hardhat_paid:
                 return False
@@ -157,16 +158,14 @@ class UserDetails(models.Model):
             if not self.waiver_completed:
                 reason += "Waiver "
         else:
-            if not self.waiver_completed:
-                reason += "Waiver  "
-            elif not self.prc_completed:
+            # if not self.waiver_completed:
+            #    reason += "Waiver  "
+            if not self.prc_completed:
                 reason += "PRC  "
             elif not self.contract:
                 reason += "Contract "
             elif not self.brightspace_completed:
                 reason += "Brightspace "
-            elif not self.training_completed:
-                reason += "Training "
             elif self.hardhat and not self.hardhat_paid:
                 reason += "Hardhat "
             elif self.breakfast and not self.breakfast_paid:
