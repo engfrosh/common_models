@@ -125,6 +125,8 @@ class UserDetails(models.Model):
         role = groups.filter(name__in=names).first()
         if role is None:
             return False
+        if self.checked_in:
+            return False
         if role.name == "Frosh":
             if not self.waiver_completed:
                 return False
@@ -154,6 +156,8 @@ class UserDetails(models.Model):
         if role is None:
             return "ERROR"
         reason = ""
+        if self.checked_in:
+            reason += "Checked-in "
         if role.name == "Frosh":
             if not self.waiver_completed:
                 reason += "Waiver "
@@ -198,6 +202,10 @@ class UserDetails(models.Model):
         id = id * 10 + checksum
         self.int_frosh_id = id
         self.save()
+
+    @property
+    def team(self) -> md.Team:
+        return md.Team.from_user(self.user)
 
 
 class FroshRole(models.Model):
