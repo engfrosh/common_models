@@ -130,8 +130,6 @@ class UserDetails(models.Model):
         if self.checked_in:
             return False
         if role.name == "Frosh":
-            if not self.waiver_completed:
-                return False
             return True
         else:
             # if not self.waiver_completed or not self.prc_completed or not self.contract:
