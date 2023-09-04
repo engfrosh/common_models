@@ -13,6 +13,8 @@ from django.utils.encoding import iri_to_uri
 from django.core.files import File
 from django_unixdatetimefield import UnixDateTimeField
 import common_models.models as md
+from PIL import Image, ImageDraw, ImageFont
+
 logger = logging.getLogger("common_models.auth_models")
 
 
@@ -80,6 +82,23 @@ class MagicLink(models.Model):
 
         blob = BytesIO()
         img = qr.make_image()
-        img.save(blob, "PNG")
+
+        orig_width = img.size[0]
+        height = img.size[1]
+        font = ImageFont.truetype(settings.STATICFILES_DIRS[0]+"/font.ttf", 40)
+        name = self.user.first_name + " " + self.user.last_name
+        text_len = font.getlength(name)
+        width = int(max(orig_width, text_len + 50))
+        offset = 0
+        if text_len + 50 > orig_width:
+            offset = int((text_len + 50 - orig_width)/2)
+        with_text = Image.new(mode="RGB", size=(width, height + 50))
+        draw = ImageDraw.Draw(with_text)
+        draw.rectangle([(0, 0), with_text.size], fill=(255, 255, 255))
+        with_text.paste(img, (offset, 0))
+        draw.text((width/2-text_len/2, height - 30),
+                  name, align="center", fill=(0, 0, 0), font=font)
+
+        with_text.save(blob, "PNG")
         self.qr_code.save("QRCode.png", File(blob))
         self.save()
