@@ -100,7 +100,9 @@ class VerificationPhoto(models.Model):
         puzzle = activity.puzzle
         team = activity.team
         if puzzle.stream_branch is not None:
-            branch_activity = TeamPuzzleActivity(team=team, puzzle=puzzle.stream_branch.first_enabled_puzzle)
+            first_en = puzzle.stream_branch.first_enabled_puzzle
+            if first_en is not None:
+                branch_activity = TeamPuzzleActivity(team=team, puzzle=first_en)
             branch_activity.save()
         self.approved = True
         self.save()
