@@ -106,6 +106,9 @@ class VerificationPhoto(models.Model):
             branch_activity.save()
         self.approved = True
         self.save()
+        if puzzle.last_puzzle_in_stream:
+            team.free_hints += 1
+            team.save()
         try:
             TeamPuzzleActivity.objects.get(verification_photo=self).team.refresh_scavenger_progress()
             from scavenger.views import update_tree
@@ -240,6 +243,13 @@ class Puzzle(models.Model):
 
     def __str__(self) -> str:
         return f"Puzzle: {self.name} [{self.id}]"
+
+    @property
+    def last_puzzle_in_stream(self):
+        last = Puzzle.objects.filter(stream=self.stream).order_by('-order').first()
+        if last == self:
+            return True
+        return False
 
     def puzzle_activity_from_team(self, team: md.Team) -> Optional[TeamPuzzleActivity]:
         try:

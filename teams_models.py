@@ -267,7 +267,6 @@ class Team(models.Model):
                     if puz_disabled or puz_verified:
                         # Move team to next puzzle
                         next_puzzle = s.get_next_enabled_puzzle(puzzle=puz)
-                        print(s, puz)
                         if not next_puzzle:
                             if self.check_if_finished_scavenger():
                                 return
