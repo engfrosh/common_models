@@ -92,6 +92,8 @@ class UserDetails(models.Model):
     rafting = models.BooleanField("Rafting Requested", default=False)
     rafting_paid = models.BooleanField("Rafting Paid", default=False)
     contract = models.BooleanField("Contract Signed", default=False)
+    allergies = models.CharField("Allergies", max_length=128, null=True, blank=True)
+    sweater_size = models.CharField("Sweater Size", max_length=5, blank=True)
 
     class Meta:
         """User Details Meta information."""
@@ -128,14 +130,12 @@ class UserDetails(models.Model):
         if self.checked_in:
             return False
         if role.name == "Frosh":
-            if not self.waiver_completed:
-                return False
             return True
         else:
             # if not self.waiver_completed or not self.prc_completed or not self.contract:
-            if not self.prc_completed or not self.contract:
-                return False
-            elif not self.brightspace_completed:
+            # if not self.prc_completed or not self.contract:
+            #    return False
+            if not self.brightspace_completed:
                 return False
             elif self.hardhat and not self.hardhat_paid:
                 return False
