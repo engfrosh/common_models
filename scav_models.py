@@ -100,12 +100,14 @@ class VerificationPhoto(models.Model):
         puzzle = activity.puzzle
         team = activity.team
         if puzzle.stream_branch is not None:
-            branch_activity = TeamPuzzleActivity(team=team, puzzle=puzzle.stream_branch.first_enabled_puzzle)
-            try:
-                branch_activity.save()
-            except Exception:
-                logger.warn("Team puzzle activity already exists for " + str(team) + ": " + str(puzzle))
-                pass
+            first_en = puzzle.stream_branch.first_enabled_puzzle
+            if first_en is not None:
+                branch_activity = TeamPuzzleActivity(team=team, puzzle=first_en)
+                try:
+                    branch_activity.save()
+                except Exception:
+                    logger.warn("Team puzzle activity already exists for " + str(team) + ": " + str(puzzle))
+                    pass
         self.approved = True
         self.save()
         if puzzle.last_puzzle_in_stream:
