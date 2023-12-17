@@ -421,6 +421,7 @@ class RoleInvite(models.Model):
     link = models.CharField("Link", max_length=40, primary_key=True)
     role = models.CharField("Role IDs", max_length=200)
     nick = models.CharField("Nickname", max_length=40, null=True, default=None)
+    user = models.ForeignKey("UserDetails", CASCADE, null=True)
 
     class Meta:
         """Discord Role Invite Model Meta information."""
