@@ -39,7 +39,7 @@ admin.site.register(BooleanSetting, BooleanSettingAdmin)
 
 
 class RoleInviteAdmin(admin.ModelAdmin):
-    search_fields = ('user', 'link')
+    search_fields = ('user__username', 'link')
     pass
 
 
