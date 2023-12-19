@@ -8,7 +8,7 @@ from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite
     FroshRole, Puzzle, PuzzleGuess, PuzzleStream, Team, DiscordUser, MagicLink, \
     TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
     UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild, Announcement, \
-    Ticket, TicketComment, InclusivityPage, FacilShift, FacilShiftSignup
+    Ticket, TicketComment, InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite
 
 
 class BooleanSettingAdmin(admin.ModelAdmin):
@@ -36,6 +36,13 @@ class BooleanSettingAdmin(admin.ModelAdmin):
 
 
 admin.site.register(BooleanSetting, BooleanSettingAdmin)
+
+
+class RoleInviteAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(RoleInvite, RoleInviteAdmin)
 
 
 class InclusivityPageAdmin(admin.ModelAdmin):
