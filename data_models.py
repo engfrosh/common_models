@@ -108,6 +108,18 @@ class UserDetails(models.Model):
         return f"{self.name} ({self.user.username})"
 
     @property
+    def role(self) -> str:
+        groups = self.user.groups
+        frosh_groups = FroshRole.objects.all()
+        names = []
+        for g in frosh_groups:
+            names += [g.name]
+        role = groups.filter(name__in=names).first()
+        if role is None:
+            return None
+        return role.name
+
+    @property
     def pronouns(self) -> list[Pronoun]:
         return list(Pronoun.objects.filter(user=self.user).order_by('order'))
 
@@ -119,12 +131,7 @@ class UserDetails(models.Model):
 
     @property
     def can_check_in(self) -> bool:
-        groups = self.user.groups
-        frosh_groups = FroshRole.objects.all()
-        names = []
-        for g in frosh_groups:
-            names += [g.name]
-        role = groups.filter(name__in=names).first()
+        role = self.role
         if role is None:
             return False
         if self.checked_in:
