@@ -387,6 +387,8 @@ class DiscordChannel(models.Model):
     def rename_name(self, name: str):
         api = get_client()
         api.set_channel_name(self.id, name)
+        self.name = name
+        self.save()
 
     def send(self, content: str):
         """Sends a message to the channel."""
