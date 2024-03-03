@@ -32,6 +32,7 @@ class Team(models.Model):
     """Model of frosh team."""
 
     display_name = models.CharField("Team Name", max_length=64, unique=True)
+    discord_name = models.CharField("Discord Name", max_length=64, blank=True, null=True)
     group = models.OneToOneField(Group, CASCADE, primary_key=True)
 
     scavenger_team = models.BooleanField(default=True)
