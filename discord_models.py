@@ -183,6 +183,10 @@ class DiscordGuild(models.Model):
         self.deleted = True
         self.save()
 
+    def create_channel(self, name: str, category: int, is_category: bool = False):
+        client = get_client()
+        return client.create_channel(name, category, self.id, is_category)
+
     def create_invite(self, *, unique: Optional[bool] = None, max_uses: Optional[int] = None) -> Invite:
 
         client = Client(settings.DISCORD_BOT_TOKEN, api_version=settings.DEFAULT_DISCORD_API_VERSION)
@@ -370,6 +374,19 @@ class DiscordChannel(models.Model):
     def send_to_updates_channels(content) -> None:
         for ch in DiscordChannel.updates_channels():
             ch.send(content=content)
+
+    def compute_name(self):
+        if self.basename is None or self.basename == "" or self.team is None:
+            return self.name
+        else:
+            return self.team.discord_name + "-" + self.basename
+
+    def rename(self):
+        self.rename_name(self.compute_name())
+
+    def rename_name(self, name: str):
+        api = get_client()
+        api.set_channel_name(self.id, name)
 
     def send(self, content: str):
         """Sends a message to the channel."""
