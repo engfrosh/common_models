@@ -102,6 +102,16 @@ class DiscordRole(models.Model):
     def secondary_group(self) -> Group:
         return self.secondary_group_id
 
+    def compute_name(self) -> str:
+        if self.secondary_group_id is None:
+            return self.group_id.name
+        return self.group_id.name + " " + self.secondary_group_id.name
+
+    def rename(self):
+        client = get_client()
+        guild = DiscordGuild.objects.all().first()
+        client.rename_role(guild.id, self.role_id, self.compute_name())
+
     class Meta:
         """Meta information for Discord roles."""
 
@@ -109,7 +119,10 @@ class DiscordRole(models.Model):
         verbose_name_plural = "Discord Roles"
 
     def __str__(self) -> str:
-        return self.group_id.name
+        if self.secondary_group_id is not None:
+            return self.group_id.name + " - " + self.secondary_group_id.name
+        else:
+            return self.group_id.name
 
 
 class ChannelTag(models.Model):
@@ -292,7 +305,6 @@ class DiscordChannel(models.Model):
 
     id = models.PositiveBigIntegerField("Discord Channel ID", primary_key=True)
     name = models.CharField("Discord Channel Name", max_length=100, unique=False, blank=True, default="")
-    basename = models.CharField("Discord Channel Base Name", max_length=100, unique=False, blank=True, null=True)
     tags = models.ManyToManyField(ChannelTag, blank=True)
     team = models.ForeignKey('Team', blank=True, null=True, on_delete=CASCADE)
     type = models.IntegerField("Channel Type", choices=[
@@ -376,10 +388,17 @@ class DiscordChannel(models.Model):
             ch.send(content=content)
 
     def compute_name(self):
-        if self.basename is None or self.basename == "" or self.team is None:
+        if self.team is None:
+            print("1-"+self.name)
             return self.name
         else:
-            return self.team.discord_name + "-" + self.basename
+            if self.type == 0:
+                tags = ""
+                for t in self.tags.all():
+                    tags += "-" + t.name
+                return self.team.discord_name + tags
+            elif self.type == 4:
+                return self.team.display_name
 
     def rename(self):
         self.rename_name(self.compute_name())
