@@ -243,6 +243,11 @@ class BooleanSetting(models.Model):
         return f"<Setting {self.id}: {self.value} >"
 
 
+class Setting(models.Model):
+    id = models.CharField(max_length=100, primary_key=True)
+    value = models.CharField(max_length=255, default=None, blank=True, null=True)
+
+
 class Announcement(models.Model):
     id = models.AutoField("Announcement ID", primary_key=True)
     created = UnixDateTimeField(auto_now=True)

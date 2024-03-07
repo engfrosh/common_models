@@ -87,7 +87,7 @@ from .discord_models import DiscordOverwrite, ChannelTag, DiscordRole, DiscordGu
 from .discord_models import DiscordMessage  # noqa: E402, F401
 from .data_models import UniversityProgram, UserDetails, FroshRole, BooleanSetting  # noqa: E402, F401
 from .data_models import Announcement, Pronoun, PronounOption, InclusivityPage  # noqa: E402, F401
-from .data_models import FacilShift, FacilShiftSignup  # noqa: #402, F401
+from .data_models import FacilShift, FacilShiftSignup, Setting  # noqa: #402, F401
 from .auth_models import MagicLink  # noqa: E402, F401
 from .trade_models import TeamTradeUpActivity  # noqa: E402, F401
 from .ticket_models import Ticket, TicketComment  # noqa: E402, F401
@@ -116,6 +116,7 @@ def initialize_database() -> None:
     ChannelTag.objects.get_or_create(name="TRADE_UP_MANAGEMENT_UPDATES_CHANNEL")
     BooleanSetting.objects.get_or_create(id="SCAVENGER_ENABLED")
     BooleanSetting.objects.get_or_create(id="TRADE_UP_ENABLED")
+    Setting.objects.get_or_create(id="MAX_FACIL_SHIFTS", defaults={'value': '2'})
 
 
 def initialize_scav() -> None:

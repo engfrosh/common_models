@@ -8,7 +8,7 @@ from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite
     FroshRole, Puzzle, PuzzleGuess, PuzzleStream, Team, DiscordUser, MagicLink, \
     TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
     UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild, Announcement, \
-    Ticket, TicketComment, InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite
+    Ticket, TicketComment, InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, Setting
 
 
 class BooleanSettingAdmin(admin.ModelAdmin):
@@ -38,9 +38,17 @@ class BooleanSettingAdmin(admin.ModelAdmin):
 admin.site.register(BooleanSetting, BooleanSettingAdmin)
 
 
+class SettingAdmin(admin.ModelAdmin):
+    readonly_fields: Sequence[str] = ("id",)
+    list_display = ("id", "value")
+    search_fields = ("id",)
+
+
+admin.site.register(Setting, SettingAdmin)
+
+
 class RoleInviteAdmin(admin.ModelAdmin):
     search_fields = ('user__username', 'link')
-    pass
 
 
 admin.site.register(RoleInvite, RoleInviteAdmin)
