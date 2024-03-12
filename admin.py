@@ -9,11 +9,18 @@ from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite
     TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
     UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild, Announcement, \
     Ticket, TicketComment, InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, \
-    Setting, LockoutPeriod
+    Setting, LockoutPeriod, FAQPage
+
+
+class FAQPageAdmin(admin.ModelAdmin):
+    list_display = ("title",)
+
+
+admin.site.register(FAQPage, FAQPageAdmin)
 
 
 class LockoutPeriodAdmin(admin.ModelAdmin):
-    pass
+    list_display = ("start", "end")
 
 
 admin.site.register(LockoutPeriod, LockoutPeriodAdmin)

@@ -5,6 +5,12 @@ from django_unixdatetimefield import UnixDateTimeField
 import common_models.models as md
 
 
+class FAQPage(models.Model):
+    id = models.AutoField("Page ID", primary_key=True)
+    title = models.CharField("Title", max_length=500)
+    body = models.TextField()
+
+
 class InclusivityPage(models.Model):
     name = models.CharField("Name", max_length=128)
     permissions = models.IntegerField()

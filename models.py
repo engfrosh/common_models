@@ -86,7 +86,7 @@ from .discord_models import DiscordUser, RoleInvite, DiscordChannel, get_client 
 from .discord_models import DiscordOverwrite, ChannelTag, DiscordRole, DiscordGuild  # noqa: E402, F401
 from .discord_models import DiscordMessage  # noqa: E402, F401
 from .data_models import UniversityProgram, UserDetails, FroshRole, BooleanSetting  # noqa: E402, F401
-from .data_models import Announcement, Pronoun, PronounOption, InclusivityPage  # noqa: E402, F401
+from .data_models import Announcement, Pronoun, PronounOption, InclusivityPage, FAQPage  # noqa: E402, F401
 from .data_models import FacilShift, FacilShiftSignup, Setting  # noqa: #402, F401
 from .auth_models import MagicLink  # noqa: E402, F401
 from .trade_models import TeamTradeUpActivity  # noqa: E402, F401
