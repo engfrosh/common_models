@@ -23,6 +23,11 @@ def _puzzle_verification_photo_upload_path(instance, filename) -> str:
     return md.random_path(instance, filename, PUZZLE_VERIFICATION_DIR)
 
 
+class LockoutPeriod(models.Model):
+    start = UnixDateTimeField()
+    end = UnixDateTimeField()
+
+
 class PuzzleGuess(models.Model):
     """Stores all the guesses for scavenger."""
 

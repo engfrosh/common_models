@@ -8,7 +8,15 @@ from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite
     FroshRole, Puzzle, PuzzleGuess, PuzzleStream, Team, DiscordUser, MagicLink, \
     TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
     UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild, Announcement, \
-    Ticket, TicketComment, InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, Setting
+    Ticket, TicketComment, InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, \
+    Setting, LockoutPeriod
+
+
+class LockoutPeriodAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(LockoutPeriod, LockoutPeriodAdmin)
 
 
 class BooleanSettingAdmin(admin.ModelAdmin):
