@@ -95,6 +95,8 @@ class UserDetails(models.Model):
     allergies = models.CharField("Allergies", max_length=128, null=True, blank=True)
     sweater_size = models.CharField("Sweater Size", max_length=5, blank=True)
 
+    charter = models.FileField(upload_to='charter/', null=True, blank=True)
+
     class Meta:
         """User Details Meta information."""
 
