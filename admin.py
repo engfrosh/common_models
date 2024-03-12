@@ -347,6 +347,7 @@ class UserDetailsAdmin(admin.ModelAdmin):
     """User Details Admin."""
 
     search_fields = ('user__username', 'name')
+    list_display = ['name', 'prc_completed']
 
 
 admin.site.register(UserDetails, UserDetailsAdmin)
