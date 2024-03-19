@@ -3,6 +3,7 @@ from django.db.models.deletion import CASCADE
 from django.contrib.auth.models import User, Group
 from django_unixdatetimefield import UnixDateTimeField
 import common_models.models as md
+import datetime
 
 
 class FAQPage(models.Model):
@@ -39,6 +40,19 @@ class FacilShift(models.Model):
     @property
     def facil_count(self) -> int:
         return len(FacilShiftSignup.objects.filter(shift=self))
+
+    @property
+    def is_cutoff(self) -> bool:
+        # Defaults to 72h
+        window = int(md.Setting.objects.get_or_create(id="Facil Shift Cutoff",
+                                                      defaults={"value": 259200})[0].value)
+        if (self.start - datetime.timedelta(seconds=window)).timestamp() >= datetime.datetime.now().timestamp():
+            return False
+        return True
+
+    @property
+    def is_passed(self) -> bool:
+        return self.start.timestamp() <= datetime.datetime.now().timestamp()
 
 
 class FacilShiftSignup(models.Model):
