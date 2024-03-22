@@ -35,7 +35,9 @@ class FacilShift(models.Model):
         verbose_name_plural = "Facil Shifts"
         permissions = [
             ("facil_signup", "Can sign up for shifts"),
-            ("calendar_manage", "Can manage calendars")
+            ("calendar_manage", "Can manage calendars"),
+            ("shift_manage", "Can manage facil shifts"),
+            ("report_manage", "Can manage reports"),
         ]
 
     @property
