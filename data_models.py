@@ -35,6 +35,7 @@ class FacilShift(models.Model):
         verbose_name_plural = "Facil Shifts"
         permissions = [
             ("facil_signup", "Can sign up for shifts"),
+            ("calendar_manage", "Can manage calendars")
         ]
 
     @property
@@ -275,3 +276,10 @@ class Announcement(models.Model):
     created = UnixDateTimeField(auto_now=True)
     title = models.CharField(max_length=200)
     body = models.TextField()
+
+    class Meta:
+        verbose_name = "Announcement"
+        verbose_name_plural = "Announcements"
+        permissions = [
+            ("announcement_manage", "Can manage announcements"),
+        ]
