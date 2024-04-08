@@ -134,6 +134,7 @@ class TeamPuzzleActivity(models.Model):
     puzzle_start_at = UnixDateTimeField(auto_now=True)
     puzzle_completed_at = UnixDateTimeField(null=True, blank=True, default=None)
     verification_photo = models.ForeignKey(VerificationPhoto, on_delete=SET_NULL, null=True, blank=True, default=None)
+    completed_bitmask = models.IntegerField(default=0)
 
     class Meta:
 
@@ -185,6 +186,35 @@ class TeamPuzzleActivity(models.Model):
         self.save()
 
         logger.info(f"Puzzle {self.puzzle} marked as completed for team {self.team} at {self.puzzle_completed_at}")
+
+    @property
+    def completed_answers(self) -> bool:
+        answers = self.puzzle.answer.split(",")
+        comp = []
+        for i in range(0, 32):
+            mask = 1 << i
+            if self.completed_bitmask & mask:
+                comp += [answers[i]]
+        return comp
+
+    def complete_answer(self, answer: str) -> bool:
+        answers = self.puzzle.answer.split(",")
+        missing = False
+        correct = False
+        for i in range(len(answers)):
+            a = answers[i]
+            if answer.lower() == a.lower():
+                if self.completed_bitmask & (1 << i):
+                    return False
+                self.completed_bitmask |= 1 << i
+                self.save()
+                logger.info(f"Marking puzzle {self.puzzle} partially completed with answer {answer} for team {self.team}")
+                correct = True
+            if not self.completed_bitmask & (1 << i):
+                missing = True
+        if not missing:
+            self.mark_completed()
+        return correct        
 
     @property
     def is_active(self) -> bool:
@@ -261,6 +291,10 @@ class Puzzle(models.Model):
             return True
         return False
 
+    @property
+    def answers(self):
+        return self.answer.split(",")
+
     def puzzle_activity_from_team(self, team: md.Team) -> Optional[TeamPuzzleActivity]:
         try:
             return TeamPuzzleActivity.objects.get(puzzle=self.id, team=team.id)
@@ -323,7 +357,7 @@ class Puzzle(models.Model):
         logger.info(f"Saved puzzle guess for team {team} on puzzle {self}: {pg}")
 
         # Check the answer
-        correct = self.answer.lower() == guess.lower()
+        correct = activity.complete_answer(guess)
 
         if not correct:
             answer = self.answer.lower()
@@ -333,43 +367,48 @@ class Puzzle(models.Model):
         # Mark the question as correct
         logger.info(f"Team {team} guess {guess} is correct for puzzle {self}")
 
-        activity.mark_completed()
         md.ChannelTag.objects.get_or_create(name="SCAVENGER_MANAGEMENT_UPDATES_CHANNEL")
         discord_channels = md.DiscordChannel.objects.filter(tags__name="SCAVENGER_MANAGEMENT_UPDATES_CHANNEL")
+        
+        if activity.is_completed:
 
-        # If verification is required,
-        if self.require_photo_upload:
+            # If verification is required,
+            if self.require_photo_upload:
+                for ch in discord_channels:
+                    ch.send(f"{team.display_name} has completed question {self.name}, awaiting a photo upload.")
 
+                return (correct, False, None, True)
+
+            # Otherwise if correct check if done scavenger and if not increment question
+            next_puzzle = self.stream.get_next_enabled_puzzle(self)
+            if self.stream_branch is not None:
+                branch_activity = TeamPuzzleActivity(team=team, puzzle=self.stream_branch.first_enabled_puzzle)
+                branch_activity.save()
+            logger.info(f"Next puzzle for team {team} is {next_puzzle}")
+
+            if not next_puzzle:
+                team.free_hints += 1
+                team.save()
+                team.check_if_finished_scavenger()
+
+                for ch in discord_channels:
+                    ch.send(f"{team.display_name} has completed scavenger stream {self.stream.name}" +
+                            ", awaiting a photo upload.")
+
+                return (correct, True, None, False)
+            try:
+                TeamPuzzleActivity(team=team, puzzle=next_puzzle).save()
+            except Exception:
+                pass
             for ch in discord_channels:
-                ch.send(f"{team.display_name} has completed question {self.name}, awaiting a photo upload.")
+                ch.send(f"{team.display_name} has completed puzzle {self.name}, moving on to puzzle {next_puzzle.name}")
 
-            return (correct, False, None, True)
-
-        # Otherwise if correct check if done scavenger and if not increment question
-        next_puzzle = self.stream.get_next_enabled_puzzle(self)
-        if self.stream_branch is not None:
-            branch_activity = TeamPuzzleActivity(team=team, puzzle=self.stream_branch.first_enabled_puzzle)
-            branch_activity.save()
-        logger.info(f"Next puzzle for team {team} is {next_puzzle}")
-
-        if not next_puzzle:
-            team.free_hints += 1
-            team.save()
-            team.check_if_finished_scavenger()
-
+            return (correct, False, next_puzzle, False)
+        else:
             for ch in discord_channels:
-                ch.send(f"{team.display_name} has completed scavenger stream {self.stream.name}" +
-                        ", awaiting a photo upload.")
-
-            return (correct, True, None, False)
-        try:
-            TeamPuzzleActivity(team=team, puzzle=next_puzzle).save()
-        except Exception:
-            pass
-        for ch in discord_channels:
-            ch.send(f"{team.display_name} has completed puzzle {self.name}, moving on to puzzle {next_puzzle.name}")
-
-        return (correct, False, next_puzzle, False)
+                ch.send(f"{team.display_name} has partially completed puzzle {self.name} with {guess}")
+            return (True, False, self, False)
+            
 
     def _generate_qr_code(self) -> None:
 
@@ -391,7 +430,7 @@ class Puzzle(models.Model):
         font = ImageFont.truetype(settings.STATICFILES_DIRS[0]+"/font.ttf", 40)
         text_len = font.getlength(self.answer)
         width = int(max(orig_width, text_len + 50))
-        offset = 0
+        offset = 0 
         if text_len + 50 > orig_width:
             offset = int((text_len + 50 - orig_width)/2)
         with_text = Image.new(mode="RGB", size=(width, height + 50))
