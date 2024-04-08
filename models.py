@@ -81,7 +81,7 @@ def random_token():
 from .teams_models import Team, VirtualTeam  # noqa: E402, F401
 from .scav_models import PuzzleStream, Puzzle, VerificationPhoto  # noqa: E402, F401
 from .scav_models import _puzzle_verification_photo_upload_path  # noqa: E402, F401
-from .scav_models import PuzzleGuess, TeamPuzzleActivity, LockoutPeriod  # noqa: E402, F401
+from .scav_models import PuzzleGuess, TeamPuzzleActivity, LockoutPeriod, QRCode  # noqa: E402, F401
 from .discord_models import DiscordUser, RoleInvite, DiscordChannel, get_client  # noqa: E402, F401
 from .discord_models import DiscordOverwrite, ChannelTag, DiscordRole, DiscordGuild  # noqa: E402, F401
 from .discord_models import DiscordMessage  # noqa: E402, F401

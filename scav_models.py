@@ -238,6 +238,47 @@ class TeamPuzzleActivity(models.Model):
         return self._requires_verification_photo_upload()
 
 
+class QRCode(models.Model):
+    puzzle = models.ForeignKey("Puzzle", on_delete=CASCADE)
+    qr_code = models.ImageField(upload_to=md.scavenger_qr_code_path, blank=True, null=True)
+
+    def generate_qr_code(self, answer: str) -> None:
+
+        qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
+        qr.add_data(
+            "https://" + settings.ALLOWED_HOSTS[0] + "/scavenger/puzzle/" + self.puzzle.secret_id + "?answer=" + answer)
+        qr.make(fit=True)
+
+        blob = BytesIO()
+        STYLE_IMAGE_PATH = "SpiritX.png"
+        USE_IMAGE = True
+        if USE_IMAGE:
+            img = qr.make_image(image_factory=StyledPilImage, embeded_image_path=STYLE_IMAGE_PATH)
+        else:
+            img = qr.make_image()
+
+        orig_width = img.size[0]
+        height = img.size[1]
+        font = ImageFont.truetype(settings.STATICFILES_DIRS[0]+"/font.ttf", 40)
+        text_len = font.getlength(answer)
+        width = int(max(orig_width, text_len + 50))
+        offset = 0
+        if text_len + 50 > orig_width:
+            offset = int((text_len + 50 - orig_width)/2)
+        with_text = Image.new(mode="RGB", size=(width, height + 50))
+        draw = ImageDraw.Draw(with_text)
+        draw.rectangle([(0, 0), with_text.size], fill=(255, 255, 255))
+        with_text.paste(img, (offset, 0))
+        draw.rectangle([(offset, 0), (offset + img.width, img.height)], fill=(255, 255, 255))
+        draw.text((width/2-text_len/2, height - 30),
+                  answer, align="center", fill=(0, 0, 0), font=font)
+
+        with_text.save(blob, "PNG")
+
+        self.qr_code.save("QRCode.png", File(blob))
+        self.save()
+
+
 class Puzzle(models.Model):
     """Puzzles in scavenger"""
 
@@ -253,8 +294,6 @@ class Puzzle(models.Model):
 
     order = models.DecimalField(max_digits=8, decimal_places=3)
     stream = models.ForeignKey(PuzzleStream, on_delete=PROTECT)
-
-    qr_code = models.ImageField(upload_to=md.scavenger_qr_code_path, blank=True)
 
     puzzle_text = models.CharField("Text", blank=True, max_length=2000)
     puzzle_file = models.FileField(upload_to=md.puzzle_path, blank=True)
@@ -417,37 +456,9 @@ class Puzzle(models.Model):
             return (True, False, self, False)
 
     def _generate_qr_code(self) -> None:
-
-        qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
-        qr.add_data(
-            "https://" + settings.ALLOWED_HOSTS[0] + "/scavenger/puzzle/" + self.secret_id + "?answer=" + self.answer)
-        qr.make(fit=True)
-
-        blob = BytesIO()
-        STYLE_IMAGE_PATH = "SpiritX.png"
-        USE_IMAGE = True
-        if USE_IMAGE:
-            img = qr.make_image(image_factory=StyledPilImage, embeded_image_path=STYLE_IMAGE_PATH)
-        else:
-            img = qr.make_image()
-
-        orig_width = img.size[0]
-        height = img.size[1]
-        font = ImageFont.truetype(settings.STATICFILES_DIRS[0]+"/font.ttf", 40)
-        text_len = font.getlength(self.answer)
-        width = int(max(orig_width, text_len + 50))
-        offset = 0
-        if text_len + 50 > orig_width:
-            offset = int((text_len + 50 - orig_width)/2)
-        with_text = Image.new(mode="RGB", size=(width, height + 50))
-        draw = ImageDraw.Draw(with_text)
-        draw.rectangle([(0, 0), with_text.size], fill=(255, 255, 255))
-        with_text.paste(img, (offset, 0))
-        draw.rectangle([(offset, 0), (offset + img.width, img.height)], fill=(255, 255, 255))
-        draw.text((width/2-text_len/2, height - 30),
-                  self.answer, align="center", fill=(0, 0, 0), font=font)
-
-        with_text.save(blob, "PNG")
-
-        self.qr_code.save("QRCode.png", File(blob))
-        self.save()
+        codes = QRCode.objects.filter(puzzle=self)
+        for qr in codes:
+            qr.delete()
+        for a in self.answer.split(","):
+            qr = QRCode(puzzle=self)
+            qr.generate_qr_code(a)
