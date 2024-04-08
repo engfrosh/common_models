@@ -208,13 +208,14 @@ class TeamPuzzleActivity(models.Model):
                     return False
                 self.completed_bitmask |= 1 << i
                 self.save()
-                logger.info(f"Marking puzzle {self.puzzle} partially completed with answer {answer} for team {self.team}")
+                logger.info(f"Marking puzzle {self.puzzle}" +
+                            f"partially completed with answer {answer} for team {self.team}")
                 correct = True
             if not self.completed_bitmask & (1 << i):
                 missing = True
         if not missing:
             self.mark_completed()
-        return correct        
+        return correct
 
     @property
     def is_active(self) -> bool:
@@ -369,7 +370,7 @@ class Puzzle(models.Model):
 
         md.ChannelTag.objects.get_or_create(name="SCAVENGER_MANAGEMENT_UPDATES_CHANNEL")
         discord_channels = md.DiscordChannel.objects.filter(tags__name="SCAVENGER_MANAGEMENT_UPDATES_CHANNEL")
-        
+
         if activity.is_completed:
 
             # If verification is required,
@@ -386,7 +387,7 @@ class Puzzle(models.Model):
                 branch_activity.save()
             if self.stream_puzzle is not None:
                 try:
-                    branch_activity = TeamPuzzleActivity(team=team, puzzle=self.stream_puzzle) 
+                    branch_activity = TeamPuzzleActivity(team=team, puzzle=self.stream_puzzle)
                     branch_activity.save()
                 except Exception:
                     pass
@@ -414,7 +415,6 @@ class Puzzle(models.Model):
             for ch in discord_channels:
                 ch.send(f"{team.display_name} has partially completed puzzle {self.name} with {guess}")
             return (True, False, self, False)
-            
 
     def _generate_qr_code(self) -> None:
 
@@ -436,7 +436,7 @@ class Puzzle(models.Model):
         font = ImageFont.truetype(settings.STATICFILES_DIRS[0]+"/font.ttf", 40)
         text_len = font.getlength(self.answer)
         width = int(max(orig_width, text_len + 50))
-        offset = 0 
+        offset = 0
         if text_len + 50 > orig_width:
             offset = int((text_len + 50 - orig_width)/2)
         with_text = Image.new(mode="RGB", size=(width, height + 50))
