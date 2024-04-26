@@ -37,6 +37,7 @@ class FacilShift(models.Model):
             ("facil_signup", "Can sign up for shifts"),
             ("calendar_manage", "Can manage calendars"),
             ("shift_manage", "Can manage facil shifts"),
+            ("attendance_manage", "Can manage facil shift attendance"),
             ("report_manage", "Can manage reports"),
         ]
 
@@ -61,6 +62,7 @@ class FacilShift(models.Model):
 class FacilShiftSignup(models.Model):
     user = models.ForeignKey(User, on_delete=CASCADE)
     shift = models.ForeignKey(FacilShift, on_delete=CASCADE)
+    attendance = models.BooleanField(default=False)
 
 
 class UniversityProgram(models.Model):
