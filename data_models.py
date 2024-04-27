@@ -163,7 +163,7 @@ class UserDetails(models.Model):
             return False
         if self.checked_in:
             return False
-        if role.name == "Frosh":
+        if role == "Frosh":
             return True
         else:
             # if not self.waiver_completed or not self.prc_completed or not self.contract:
@@ -181,18 +181,13 @@ class UserDetails(models.Model):
 
     @property
     def check_in_reason(self) -> bool:
-        groups = self.user.groups
-        frosh_groups = FroshRole.objects.all()
-        names = []
-        for g in frosh_groups:
-            names += [g.name]
-        role = groups.filter(name__in=names).first()
+        role = self.role
         if role is None:
             return "ERROR"
         reason = ""
         if self.checked_in:
             reason += "Checked-in "
-        if role.name == "Frosh":
+        if role == "Frosh":
             if not self.waiver_completed:
                 reason += "Waiver "
         else:
