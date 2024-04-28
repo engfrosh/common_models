@@ -171,7 +171,8 @@ class DiscordGuild(models.Model):
         verbose_name_plural = "Discord Guilds"
         permissions = [
             ("create_role", "Allows a user to create discord roles"),
-            ("create_channel", "Allows a user to create discord channels")
+            ("create_channel", "Allows a user to create discord channels"),
+            ("spirit_on_duty", "Allows a user to mark themselves as the spirit on duty")
         ]
 
     def __str__(self) -> str:
