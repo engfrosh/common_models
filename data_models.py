@@ -164,19 +164,30 @@ class UserDetails(models.Model):
         if self.checked_in:
             return False
         if role == "Frosh":
+            req = md.Setting.objects.get_or_create(id="Frosh_Checkin_Req",
+                                                   defaults={"value": "waiver"})[0].value.split(",")
+            if "waiver" in req and not self.waiver_completed:
+                return False
             return True
         else:
-            # if not self.waiver_completed or not self.prc_completed or not self.contract:
-            # if not self.prc_completed or not self.contract:
-            #    return False
-            if not self.brightspace_completed:
+            req = md.Setting.objects.get_or_create(id="Facil_Checkin_Req",
+                                                   defaults={"value": "waiver,brightspace,prc,contract,paid"})[0]
+            req = req.value.split(",")
+            if "waiver" in req and not self.waiver_completed:
                 return False
-            elif self.hardhat and not self.hardhat_paid:
+            if "brightspace" in req and not self.brightspace_completed:
                 return False
-            elif self.breakfast and not self.breakfast_paid:
+            if "prc" in req and not self.prc_completed:
                 return False
-            elif self.rafting and not self.rafting_paid:
+            if "contract" in req and not self.contract:
                 return False
+            if "paid" in req:
+                if self.hardhat and not self.hardhat_paid:
+                    return False
+                elif self.breakfast and not self.breakfast_paid:
+                    return False
+                elif self.rafting and not self.rafting_paid:
+                    return False
             return True
 
     @property
@@ -188,23 +199,29 @@ class UserDetails(models.Model):
         if self.checked_in:
             reason += "Checked-in "
         if role == "Frosh":
-            if not self.waiver_completed:
+            req = md.Setting.objects.get_or_create(id="Frosh_Checkin_Req",
+                                                   defaults={"value": "waiver"})[0].value.split(",")
+            if "waiver" in req and not self.waiver_completed:
                 reason += "Waiver "
         else:
-            # if not self.waiver_completed:
-            #    reason += "Waiver  "
-            if not self.prc_completed:
-                reason += "PRC  "
-            elif not self.contract:
-                reason += "Contract "
-            elif not self.brightspace_completed:
+            req = md.Setting.objects.get_or_create(id="Facil_Checkin_Req",
+                                                   defaults={"value": "waiver,brightspace,prc,contract,paid"})[0]
+            req = req.value.split(",")
+            if "waiver" in req and not self.waiver_completed:
+                reason += "Waiver "
+            if "brightspace" in req and not self.brightspace_completed:
                 reason += "Brightspace "
-            elif self.hardhat and not self.hardhat_paid:
-                reason += "Hardhat "
-            elif self.breakfast and not self.breakfast_paid:
-                reason += "Breakfast "
-            elif self.rafting and not self.rafting_paid:
-                reason += "Rafting "
+            if "prc" in req and not self.prc_completed:
+                reason += "PRC "
+            if "contract" in req and not self.contract:
+                reason += "Contract "
+            if "paid" in req:
+                if self.hardhat and not self.hardhat_paid:
+                    reason += "Hardhat "
+                elif self.breakfast and not self.breakfast_paid:
+                    reason += "Breakfast "
+                elif self.rafting and not self.rafting_paid:
+                    reason += "Rafting "
         return reason
 
     @property
