@@ -13,7 +13,7 @@ from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite
 
 
 class QRCodeAdmin(admin.ModelAdmin):
-    list_display = ("puzzle__name",)
+    pass
 
 
 admin.site.register(QRCode, QRCodeAdmin)
