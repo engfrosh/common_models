@@ -9,7 +9,14 @@ from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite
     TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
     UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild, Announcement, \
     Ticket, TicketComment, InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, \
-    Setting, LockoutPeriod, FAQPage
+    Setting, LockoutPeriod, FAQPage, QRCode
+
+
+class QRCodeAdmin(admin.ModelAdmin):
+    list_display = ("puzzle__name",)
+
+
+admin.site.register(QRCode, QRCodeAdmin)
 
 
 class FAQPageAdmin(admin.ModelAdmin):
