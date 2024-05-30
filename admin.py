@@ -9,7 +9,14 @@ from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite
     TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
     UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild, Announcement, \
     Ticket, TicketComment, InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, \
-    Setting, LockoutPeriod, FAQPage, QRCode
+    Setting, LockoutPeriod, FAQPage, QRCode, RoleOption
+
+
+class RoleOptionAdmin(admin.ModelAdmin):
+    list_display = ("emote", "role", "message")
+
+
+admin.site.register(RoleOption, RoleOptionAdmin)
 
 
 class QRCodeAdmin(admin.ModelAdmin):

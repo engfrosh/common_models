@@ -81,6 +81,12 @@ class UniversityProgram(models.Model):
         return self.name
 
 
+class RoleOption(models.Model):
+    emote = models.CharField("Emote", max_length=64)
+    role = models.PositiveBigIntegerField("Role id")
+    message = models.PositiveBigIntegerField("Message id")
+
+
 class PronounOption(models.Model):
     emote = models.CharField("Emote", max_length=64)
     name = models.CharField("Name", max_length=64)
