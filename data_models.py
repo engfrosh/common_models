@@ -7,6 +7,11 @@ import datetime
 from django.utils.html import escape
 
 
+class SiteImage(models.Model):
+    name = models.CharField("Name", max_length=100)
+    image = models.ImageField(upload_to=md.img_path, null=True)
+
+
 class FAQPage(models.Model):
     id = models.AutoField("Page ID", primary_key=True)
     title = models.CharField("Title", max_length=500)
@@ -25,6 +30,21 @@ class FAQPage(models.Model):
                 bolded += "<b>" + s + "</b>"
             bold = not bold
         result = bolded.replace('\n', "<br>")
+        spl = result.split("[")
+        result = spl[0]
+        for i in range(1, len(spl)):
+            s = spl[i]
+            index = s.find("]")
+            if index == -1:
+                result += "[" + s
+            else:
+                img = s[:index]
+                image = SiteImage.objects.filter(name=img).first()
+                if image is None:
+                    img_url="broken_link.png"
+                else:
+                    img_url = image.image.url
+                result += "<img src=\""+img_url+"\"/>" + s[index+1:]
         return result
 
 

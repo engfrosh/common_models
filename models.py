@@ -36,6 +36,10 @@ def inclusivity_path(instance, filename):
     return random_path(instance, filename, INCLUSIVITY_DIR)
 
 
+def img_path(instance, filename):
+    return random_path(instance, filename, IMG_DIR)
+
+
 def logo_path(instance, filename):
     return random_path(instance, filename, SCAVENGER_DIR + LOGO_DIR)
 
@@ -87,7 +91,7 @@ from .discord_models import DiscordOverwrite, ChannelTag, DiscordRole, DiscordGu
 from .discord_models import DiscordMessage  # noqa: E402, F401
 from .data_models import UniversityProgram, UserDetails, FroshRole, BooleanSetting  # noqa: E402, F401
 from .data_models import Announcement, Pronoun, PronounOption, InclusivityPage, FAQPage  # noqa: E402, F401
-from .data_models import FacilShift, FacilShiftSignup, Setting, RoleOption  # noqa: #402, F401
+from .data_models import FacilShift, FacilShiftSignup, Setting, RoleOption, SiteImage  # noqa: #402, F401
 from .auth_models import MagicLink  # noqa: E402, F401
 from .trade_models import TeamTradeUpActivity  # noqa: E402, F401
 from .ticket_models import Ticket, TicketComment  # noqa: E402, F401
@@ -103,6 +107,7 @@ QR_CODE_DIR = "qr_codes/"
 LOGO_DIR = "team_logos/"
 TREE_DIR = "scav_trees/"
 INCLUSIVITY_DIR = "inclusivity/"
+IMG_DIR = "uploaded_images/"
 
 FILE_RANDOM_LENGTH = 128
 
