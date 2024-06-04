@@ -45,6 +45,30 @@ class FAQPage(models.Model):
                 else:
                     img_url = image.image.url
                 result += "<img src=\""+img_url+"\"/>" + s[index+1:]
+        spl = result.split("--")
+        result = spl[0]
+        inside = True
+        for i in range(1, len(spl)):
+            s = spl[i]
+            if inside:
+                table_html = "<table>"
+                rows = s.split(".")
+                first = True
+                for row in rows:
+                    table_html += "<tr>"
+                    for col in row.split(","):
+                        if first:
+                            table_html += "<th>" + col + "</th>"
+                        else:
+                            table_html += "<td>" + col + "</td>"
+                    table_html += "</tr>"
+                    first = False
+                table_html += "</table>"
+                result += table_html
+            else:
+                result += s
+            inside = not inside
+
         return result
 
 
