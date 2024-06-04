@@ -4,12 +4,28 @@ from django.contrib.auth.models import User, Group
 from django_unixdatetimefield import UnixDateTimeField
 import common_models.models as md
 import datetime
+from django.utils.html import escape
 
 
 class FAQPage(models.Model):
     id = models.AutoField("Page ID", primary_key=True)
     title = models.CharField("Title", max_length=500)
     body = models.TextField()
+
+    @property
+    def html_body(self):
+        esc = escape(self.body)
+        spl = esc.split("**")
+        bolded = ""
+        bold = False
+        for s in spl:
+            if not bold:
+                bolded += s
+            else:
+                bolded += "<b>" + s + "</b>"
+            bold = not bold
+        result = bolded.replace('\n', "<br>")
+        return result
 
 
 class InclusivityPage(models.Model):
