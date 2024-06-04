@@ -34,7 +34,7 @@ admin.site.register(QRCode, QRCodeAdmin)
 
 
 class FAQPageAdmin(admin.ModelAdmin):
-    list_display = ("title",)
+    list_display = ("title","restricted")
 
 
 admin.site.register(FAQPage, FAQPageAdmin)

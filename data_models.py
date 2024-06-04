@@ -16,6 +16,7 @@ class FAQPage(models.Model):
     id = models.AutoField("Page ID", primary_key=True)
     title = models.CharField("Title", max_length=500)
     body = models.TextField()
+    restricted = models.BooleanField("Restricted", default=False)
 
     @property
     def html_body(self):
