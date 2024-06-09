@@ -16,7 +16,7 @@ class FAQPage(models.Model):
     id = models.AutoField("Page ID", primary_key=True)
     title = models.CharField("Title", max_length=500)
     body = models.TextField()
-    restricted = models.BooleanField("Restricted", default=False)
+    restricted = models.ForeignKey(Group, on_delete=CASCADE, default=None, blank=True, null=True)
 
     @property
     def html_body(self):
@@ -46,6 +46,14 @@ class FAQPage(models.Model):
                 else:
                     img_url = image.image.url
                 result += "<img src=\""+img_url+"\"/>" + s[index+1:]
+        spl = result.split("$")
+        result = spl[0]
+        inside = True
+        for i in range(1, len(spl)):
+            s = spl[i]
+            if inside:
+                result += "<a href=\"" + s + "\">" + s + "</a>"
+            inside = not inside
         spl = result.split("--")
         result = spl[0]
         inside = True
