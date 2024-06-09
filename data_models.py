@@ -42,7 +42,7 @@ class FAQPage(models.Model):
                 img = s[:index]
                 image = SiteImage.objects.filter(name=img).first()
                 if image is None:
-                    img_url="broken_link.png"
+                    img_url = "broken_link.png"
                 else:
                     img_url = image.image.url
                 result += "<img src=\""+img_url+"\"/>" + s[index+1:]
