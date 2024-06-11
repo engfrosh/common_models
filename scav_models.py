@@ -300,6 +300,7 @@ class Puzzle(models.Model):
     puzzle_file_display_filename = models.CharField(max_length=256, blank=True)
     puzzle_file_download = models.BooleanField(default=False)
     puzzle_file_is_image = models.BooleanField(default=False)
+    puzzle_is_link = models.BooleanField(default=False)
 
     created_at = UnixDateTimeField(auto_now_add=True)
     updated_at = UnixDateTimeField(auto_now=True)
