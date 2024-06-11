@@ -75,7 +75,6 @@ admin.site.register(BooleanSetting, BooleanSettingAdmin)
 
 
 class SettingAdmin(admin.ModelAdmin):
-    readonly_fields: Sequence[str] = ("id",)
     list_display = ("id", "value")
     search_fields = ("id",)
 
