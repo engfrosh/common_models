@@ -194,6 +194,7 @@ class UserDetails(models.Model):
     contract = models.BooleanField("Contract Signed", default=False)
     allergies = models.CharField("Allergies", max_length=128, null=True, blank=True)
     sweater_size = models.CharField("Sweater Size", max_length=5, blank=True)
+    discord_allowed = models.BooleanField("Discord Allowed", default=True)
 
     charter = models.FileField(upload_to='charter/', null=True, blank=True)
 
