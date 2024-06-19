@@ -16,7 +16,7 @@ class FAQPage(models.Model):
     id = models.AutoField("Page ID", primary_key=True)
     title = models.CharField("Title", max_length=500)
     body = models.TextField()
-    restricted = models.ManyToManyField(Group)
+    restricted = models.ManyToManyField(Group, null=True, blank=True)
 
     @property
     def html_body(self):
@@ -52,7 +52,12 @@ class FAQPage(models.Model):
         for i in range(1, len(spl)):
             s = spl[i]
             if inside:
-                result += "<a href=\"" + s + "\">" + s + "</a>"
+                if s == "":
+                    result += "$"
+                else:
+                    result += "<a href=\"" + s + "\">" + s + "</a>"
+            else:
+                result += s
             inside = not inside
         spl = result.split("--")
         result = spl[0]
