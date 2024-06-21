@@ -125,7 +125,6 @@ def initialize_database() -> None:
 
 
 def initialize_scav() -> None:
-    from scavenger import tree
     for team in Team.objects.all():
         streams = PuzzleStream.objects.filter(enabled=True, default=True)
 
@@ -136,6 +135,5 @@ def initialize_scav() -> None:
                 pa.save()
             except Exception:
                 pass
-        tree.generate_tree(team)
 
 # endregion

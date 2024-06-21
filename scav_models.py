@@ -120,8 +120,6 @@ class VerificationPhoto(models.Model):
             team.save()
         try:
             TeamPuzzleActivity.objects.get(verification_photo=self).team.refresh_scavenger_progress()
-            from scavenger.views import update_tree
-            update_tree(team)
         except TeamPuzzleActivity.DoesNotExist:
             pass
 

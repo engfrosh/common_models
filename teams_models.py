@@ -221,8 +221,6 @@ class Team(models.Model):
         self.scavenger_finished = False
         self.scavenger_locked_out_until = None
         self.save()
-        from scavenger.views import update_tree
-        update_tree(self)
 
         # If hints are added they also need to be reset here
 
