@@ -306,7 +306,7 @@ class Puzzle(models.Model):
     updated_at = UnixDateTimeField(auto_now=True)
 
     stream_branch = models.ForeignKey(PuzzleStream, on_delete=CASCADE, null=True, blank=True, default=None, related_name='branch_puzzle')  # noqa: E501
-    stream_puzzle = models.ForeignKey("Puzzle", on_delete=SET_NULL, blank=True, null=True)
+    stream_puzzle = models.ForeignKey("Puzzle", on_delete=SET_NULL, blank=True, null=True, related_name='puzzle_opener')
     # teams = models.ManyToManyField(Team, through="TeamPuzzleActivity")
 
     class Meta:

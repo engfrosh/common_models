@@ -16,7 +16,7 @@ class FAQPage(models.Model):
     id = models.AutoField("Page ID", primary_key=True)
     title = models.CharField("Title", max_length=500)
     body = models.TextField()
-    restricted = models.ManyToManyField(Group, null=True, blank=True)
+    restricted = models.ManyToManyField(Group, blank=True)
 
     @property
     def html_body(self):
