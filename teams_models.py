@@ -88,6 +88,14 @@ class Team(models.Model):
         return len(activities)
 
     @property
+    def last_puzzle_timestamp(self) -> str:
+        activity = md.TeamPuzzleActivity.objects.filter(team=self).exclude(puzzle_completed_at=0)
+        activity = activity.order_by("-puzzle_completed_at").first()
+        if activity is None:
+            return "N/A"
+        return str(activity.puzzle_completed_at)
+
+    @property
     def active_branches(self):
         activities = md.TeamPuzzleActivity.objects.filter(team=self).order_by("puzzle__stream__name")
         branches = []
