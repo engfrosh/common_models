@@ -75,6 +75,33 @@ class Team(models.Model):
         return self.group.id
 
     @property
+    def num_clues_finished(self) -> int:
+        return len(self.verified_puzzles)
+
+    @property
+    def num_main_clues_finished(self) -> int:
+        main_streams = md.PuzzleStream.objects.filter(enabled=True, default=True)
+        activities = md.TeamPuzzleActivity.objects \
+            .filter(puzzle__stream__in=main_streams, team=self,
+                    puzzle__enabled=True, verification_photo__approved=True) \
+            .exclude(puzzle_completed_at=0)
+        return len(activities)
+
+    @property
+    def active_branches(self):
+        activities = md.TeamPuzzleActivity.objects.filter(team=self).order_by("puzzle__stream__name")
+        branches = []
+        for a in activities:
+            found = False
+            for a2 in branches:
+                if a.puzzle.stream == a2.puzzle.stream:
+                    found = True
+            if a.puzzle.stream.enabled and not found:
+                branches += [a]
+        return branches  # This returns puzzle activities because Django templates can't call functions
+        # and the activities are the only model that has both team and puzzle info
+
+    @property
     def to_dict(self):
         """Get the dict representation of the team."""
         return {

@@ -89,7 +89,7 @@ class VerificationPhoto(models.Model):
     """Stores references to all the uploaded photos for scavenger puzzle verification."""
 
     datetime = UnixDateTimeField(auto_now=True)
-    photo = models.ImageField(upload_to=_puzzle_verification_photo_upload_path)
+    photo = models.ImageField(upload_to=_puzzle_verification_photo_upload_path, null=True)
     approved = models.BooleanField(default=False)
 
     class Meta:
@@ -140,6 +140,18 @@ class TeamPuzzleActivity(models.Model):
         verbose_name_plural = "Team Puzzle Activities"
 
         unique_together = [["team", "puzzle"]]
+
+    @property
+    def num_clues_finished(self) -> int:
+        activities = TeamPuzzleActivity.objects \
+                     .filter(puzzle__stream=self.puzzle.stream, team=self.team,
+                             puzzle__enabled=True, verification_photo__approved=True) \
+                     .exclude(puzzle_completed_at=0)
+        return len(activities)
+
+    @property
+    def num_clues_total(self) -> int:
+        return len(Puzzle.objects.filter(enabled=True, stream=self.puzzle.stream))
 
     def __str__(self) -> str:
         return f"{self.team.display_name} on puzzle: {self.puzzle.name}"
@@ -417,6 +429,11 @@ class Puzzle(models.Model):
                     ch.send(f"{team.display_name} has completed question {self.name}, awaiting a photo upload.")
 
                 return (correct, False, None, True)
+            else:
+                photo = VerificationPhoto(approved=True, photo=None)
+                photo.save()
+                activity.verification_photo = photo
+                activity.save()
 
             # Otherwise if correct check if done scavenger and if not increment question
             next_puzzle = self.stream.get_next_enabled_puzzle(self)
