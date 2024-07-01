@@ -295,7 +295,7 @@ class Puzzle(models.Model):
     id = models.AutoField(unique=True, primary_key=True)
     name = models.CharField(max_length=200, unique=True)
 
-    answer = models.CharField(max_length=100)
+    answer = models.CharField(max_length=400)
     require_photo_upload = models.BooleanField(default=settings.DEFAULT_SCAVENGER_PUZZLE_REQUIRE_PHOTO_UPLOAD)
 
     secret_id = models.SlugField(max_length=64, unique=True, default=md.random_puzzle_secret_id)
