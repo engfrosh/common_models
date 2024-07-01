@@ -239,22 +239,26 @@ admin.site.register(PuzzleStream, PuzzleStreamAdmin)
 class PuzzleAdmin(admin.ModelAdmin):
     """Admin for Scavenger Puzzle"""
 
-    list_display = ("name", "stream", "enabled", "order", "answer")
+    list_display = ("name", "stream", "enabled", "order", "answer", "stream_branch", "stream_puzzle")
     readonly_fields = ("secret_id",)
     search_fields = ("id", "name", "answer", "secret_id", "stream", "order", "puzzle_text")
     ordering: Optional[Sequence[str]] = ("enabled", "stream", "order")
     actions = ("disable_puzzle", "enable_puzzle")
 
+    def stream_branch(self, obj):
+        return obj.stream_branch.name
+
+    def stream_puzzle(self, obj):
+        return obj.stream_puzzle.name
+
     @admin.action(description="Disable puzzle")
     def disable_puzzle(self, request, queryset):
-
         for obj in queryset:
             obj.enabled = False
             obj.save()
 
     @admin.action(description="Enable puzzle")
     def enable_puzzle(self, request, queryset):
-
         for obj in queryset:
             obj.enabled = True
             obj.save()
