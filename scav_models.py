@@ -327,6 +327,7 @@ class Puzzle(models.Model):
             ("guess_scavenger_puzzle", "Can guess for scavenger puzzle"),
             ("manage_scav", "Can manage scav"),
             ("bypass_scav_rules", "Bypasses all scav rules"),
+            ("disable_scav_save", "Stops puzzles from being saved when completed"),
             ("lock_scav", "Can lock scav")
         ]
 
@@ -389,7 +390,7 @@ class Puzzle(models.Model):
 
         return pa.requires_verification_photo_upload
 
-    def check_team_guess(self, team: md.Team, guess: str) -> Tuple:
+    def check_team_guess(self, team: md.Team, guess: str, bypass=False) -> Tuple:
         """
         Checks if a team's guess is correct. First is if correct, second if stream complete,
         third the new puzzle if unlocked, fourth if a verification picture is required.
@@ -424,7 +425,7 @@ class Puzzle(models.Model):
         if activity.is_completed:
 
             # If verification is required,
-            if self.require_photo_upload:
+            if self.require_photo_upload and not bypass:
                 for ch in discord_channels:
                     ch.send(f"{team.display_name} has completed question {self.name}, awaiting a photo upload.")
 
