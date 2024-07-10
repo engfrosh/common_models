@@ -108,6 +108,11 @@ class FacilShiftSignupAdmin(admin.ModelAdmin):
     list_display = ('shift', 'user')
     search_fields = ('shift__name', 'user__username')
 
+    def get_name(self, obj):
+        return obj.shift.name
+
+    get_name.short_description = "Name"
+
 
 admin.site.register(FacilShiftSignup, FacilShiftSignupAdmin)
 
