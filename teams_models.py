@@ -179,7 +179,8 @@ class Team(models.Model):
     @property
     def completed_puzzles_requiring_photo_upload(self) -> List:
         result = []
-        query = md.TeamPuzzleActivity.objects.select_related("puzzle").filter(team=self, verification_photo=None)
+        query = md.TeamPuzzleActivity.objects.select_related("puzzle").filter(team=self, verification_photo=None) \
+                  .exclude(puzzle_completed_at=0).order_by("puzzle__order")
         for a in query:
             result += [a.puzzle]
         return result
