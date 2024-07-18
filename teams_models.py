@@ -130,30 +130,39 @@ class Team(models.Model):
 
     @property
     def active_puzzles(self) -> List:
-        for perm in self.group.permissions.all():
-            if perm.codename == "bypass_scav_rules":
-                return list(md.Puzzle.objects.filter(enabled=True).order_by("order").all())
-        active_puzzle_activities = filter(md.TeamPuzzleActivity._is_active,
-                                          self._puzzle_activities_qs)
-        return [apa.puzzle for apa in active_puzzle_activities]
+        result = []
+        query = md.TeamPuzzleActivity.objects.select_related("puzzle") \
+                  .filter(team=self, puzzle_completed_at=0).order_by("puzzle__order")
+        for a in query:
+            result += [a.puzzle]
+        return result
 
     @property
     def completed_puzzles(self) -> List:
-        completed_puzzle_activities = filter(md.TeamPuzzleActivity._is_completed,
-                                             self._puzzle_activities_qs)
-        return [cpa.puzzle for cpa in completed_puzzle_activities]
+        result = []
+        query = md.TeamPuzzleActivity.objects.select_related("puzzle") \
+                  .filter(team=self).exclude(puzzle_completed_at=0).order_by("puzzle__order")
+        for a in query:
+            result += [a.puzzle]
+        return result
 
     @property
     def verified_puzzles(self) -> List:
-        verified_puzzle_activities = filter(md.TeamPuzzleActivity._is_completed,
-                                            filter(md.TeamPuzzleActivity._is_verified,
-                                                   self._puzzle_activities_qs))
-        return [vpa.puzzle for vpa in verified_puzzle_activities]
+        result = []
+        query = md.TeamPuzzleActivity.objects.select_related("puzzle", "verification_photo") \
+                  .filter(team=self, verification_photo__approved=True).order_by("puzzle__order")
+        for a in query:
+            result += [a.puzzle]
+        return result
 
     @property
     def completed_puzzles_awaiting_verification(self) -> List:
-        return [cpav.puzzle for cpav in filter(md.TeamPuzzleActivity._is_awaiting_verification,
-                                               self._puzzle_activities_qs)]
+        result = []
+        query = md.TeamPuzzleActivity.objects.select_related("puzzle", "verification_photo") \
+                  .filter(team=self, verification_photo__approved=False).order_by("puzzle__order")
+        for a in query:
+            result += [a.puzzle]
+        return result
 
     @property
     def all_puzzles(self) -> List:
@@ -169,8 +178,11 @@ class Team(models.Model):
 
     @property
     def completed_puzzles_requiring_photo_upload(self) -> List:
-        return [pa.puzzle for pa in filter(md.TeamPuzzleActivity._requires_verification_photo_upload,
-                                           self.puzzle_activities)]
+        result = []
+        query = md.TeamPuzzleActivity.objects.select_related("puzzle").filter(team=self, verification_photo=None)
+        for a in query:
+            result += [a.puzzle]
+        return result
 
     # @property
     # def latest_puzzle_activities(self) -> List[TeamPuzzleActivity]:
