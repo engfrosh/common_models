@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models.deletion import CASCADE
+from django.db.models.deletion import CASCADE, SET_NULL
 from django.contrib.auth.models import User, Group
 from django_unixdatetimefield import UnixDateTimeField
 import common_models.models as md
@@ -98,9 +98,11 @@ class FacilShift(models.Model):
     name = models.CharField("Name", max_length=128)
     desc = models.CharField("Description", max_length=1000)
     flags = models.CharField("Flags", max_length=5)
-    start = UnixDateTimeField(null=True)
-    end = UnixDateTimeField(null=True)
+    start = UnixDateTimeField(null=True, blank=True)
+    end = UnixDateTimeField(null=True, blank=True)
     max_facils = models.IntegerField()
+    administrative = models.BooleanField("Administrative", blank=True, default=False)
+    checkin_user = models.ForeignKey(User, null=True, blank=True, on_delete=SET_NULL)
 
     class Meta:
         """Facil Shift Meta information."""
@@ -113,6 +115,7 @@ class FacilShift(models.Model):
             ("shift_manage", "Can manage facil shifts"),
             ("attendance_manage", "Can manage facil shift attendance"),
             ("report_manage", "Can manage reports"),
+            ("attendance_admin", "Can manage attendance for restricted shifts")
         ]
 
     @property
@@ -121,6 +124,8 @@ class FacilShift(models.Model):
 
     @property
     def is_cutoff(self) -> bool:
+        if self.administrative:
+            return True
         # Defaults to 72h
         window = int(md.Setting.objects.get_or_create(id="Facil Shift Cutoff",
                                                       defaults={"value": 259200})[0].value)
@@ -130,6 +135,8 @@ class FacilShift(models.Model):
 
     @property
     def is_passed(self) -> bool:
+        if self.administrative:
+            return True
         return self.start.timestamp() <= datetime.datetime.now().timestamp()
 
 
