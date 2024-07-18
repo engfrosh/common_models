@@ -187,7 +187,7 @@ class Pronoun(models.Model):
 class UserDetails(models.Model):
     """Details pertaining to users without fields in the default User."""
 
-    user = models.OneToOneField(User, on_delete=CASCADE, primary_key=True)
+    user = models.OneToOneField(User, on_delete=CASCADE, primary_key=True, related_name="details")
     name = models.CharField("Name", max_length=64)
     invite_email_sent = models.BooleanField("Invite Email Sent", default=False)
     checked_in = models.BooleanField("Checked In", default=False)
