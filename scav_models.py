@@ -327,7 +327,6 @@ class Puzzle(models.Model):
             ("guess_scavenger_puzzle", "Can guess for scavenger puzzle"),
             ("manage_scav", "Can manage scav"),
             ("bypass_scav_rules", "Bypasses all scav rules"),
-            ("disable_scav_save", "Stops puzzles from being saved when completed"),
             ("lock_scav", "Can lock scav")
         ]
 
