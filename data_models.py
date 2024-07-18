@@ -103,6 +103,7 @@ class FacilShift(models.Model):
     max_facils = models.IntegerField()
     administrative = models.BooleanField("Administrative", blank=True, default=False)
     checkin_user = models.ForeignKey(User, null=True, blank=True, on_delete=SET_NULL)
+    type = models.CharField("Type", max_length=50, blank=True, null=True)
 
     class Meta:
         """Facil Shift Meta information."""
