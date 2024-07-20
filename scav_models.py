@@ -271,8 +271,8 @@ class QRCode(models.Model):
         height = img.size[1]
         font = ImageFont.truetype(settings.STATICFILES_DIRS[0]+"/font.ttf", 40)
         text_len = font.getlength(answer)
-        width = int(max(orig_width, text_len + 50))
-        offset = 0
+        width = int(max(orig_width + 50, text_len + 50))
+        offset = 25
         if text_len + 50 > orig_width:
             offset = int((text_len + 50 - orig_width)/2)
         with_text = Image.new(mode="RGB", size=(width, height + 50))
