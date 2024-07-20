@@ -97,7 +97,8 @@ class Team(models.Model):
 
     @property
     def active_branches(self):
-        activities = md.TeamPuzzleActivity.objects.filter(team=self).order_by("puzzle__stream__name")
+        activities = md.TeamPuzzleActivity.objects.filter(team=self).order_by("puzzle__stream__name") \
+                       .select_related("puzzle", "puzzle__stream")
         branches = []
         for a in activities:
             found = False
