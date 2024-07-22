@@ -133,7 +133,8 @@ class Team(models.Model):
     def active_puzzles(self) -> List:
         result = []
         query = md.TeamPuzzleActivity.objects.select_related("puzzle") \
-                  .filter(team=self, puzzle_completed_at=0).order_by("puzzle__order")
+                  .filter(team=self, puzzle_completed_at=0, puzzle__stream__locked=False) \
+                  .order_by("puzzle__order")
         for a in query:
             result += [a.puzzle]
         return result

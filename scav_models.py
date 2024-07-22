@@ -48,6 +48,7 @@ class PuzzleStream(models.Model):
     name = models.CharField(max_length=100, unique=True)
     enabled = models.BooleanField(default=True)
     default = models.BooleanField(default=True)
+    locked = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return f"{self.name}"

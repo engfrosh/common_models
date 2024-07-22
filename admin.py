@@ -234,8 +234,7 @@ admin.site.register(DiscordUser, DiscordUserAdmin)
 
 
 class PuzzleStreamAdmin(admin.ModelAdmin):
-
-    pass
+    list_display = ("name", "enabled", "locked")
 
 
 admin.site.register(PuzzleStream, PuzzleStreamAdmin)
