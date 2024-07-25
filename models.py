@@ -121,6 +121,9 @@ def initialize_database() -> None:
     ChannelTag.objects.get_or_create(name="TRADE_UP_MANAGEMENT_UPDATES_CHANNEL")
     BooleanSetting.objects.get_or_create(id="SCAVENGER_ENABLED")
     BooleanSetting.objects.get_or_create(id="TRADE_UP_ENABLED")
+    BooleanSetting.objects.get_or_create(id="DISCORD_ENABLED")
+    BooleanSetting.objects.get_or_create(id="REGISTRATION_ENABLED", defaults={'value': False})
+    BooleanSetting.objects.get_or_create(id="DISCORD_LOGIN_ENABLED")
     Setting.objects.get_or_create(id="MAX_FACIL_SHIFTS", defaults={'value': '2'})
 
 
