@@ -298,7 +298,7 @@ class Team(models.Model):
         """Moves team along if verified on a puzzle or a puzzle has been disabled."""
 
         logger.info(f"Refreshing scavenger progress for team {self}")
-
+        self.check_if_finished_scavenger()
         if self.scavenger_finished:
             return
 
