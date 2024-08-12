@@ -26,6 +26,7 @@ def _puzzle_verification_photo_upload_path(instance, filename) -> str:
 class LockoutPeriod(models.Model):
     start = UnixDateTimeField()
     end = UnixDateTimeField()
+    branch = models.ForeignKey('PuzzleStream', on_delete=CASCADE, null=True, blank=True)
 
 
 class PuzzleGuess(models.Model):

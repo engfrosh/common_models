@@ -218,6 +218,7 @@ class UserDetails(models.Model):
         verbose_name_plural = "Users' Details"
         permissions = [
             ("check_in", "Can manage user check in"),
+            ("frosh_list", "Can access frosh list")
         ]
 
     def __str__(self) -> str:

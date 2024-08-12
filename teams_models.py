@@ -194,7 +194,7 @@ class Team(models.Model):
     @property
     def scavenger_locked(self) -> bool:
         now = timezone.now()
-        for period in md.LockoutPeriod.objects.all():
+        for period in md.LockoutPeriod.objects.filter(branch=None):
             if period.start <= now and period.end >= now:
                 return True
         if self.scavenger_locked_out_until is None:
