@@ -245,7 +245,7 @@ class PuzzleAdmin(admin.ModelAdmin):
 
     list_display = ("name", "stream", "enabled", "order", "answer", "stream_branch", "stream_puzzle")
     readonly_fields = ("secret_id",)
-    search_fields = ("id", "name", "answer", "secret_id", "stream", "order", "puzzle_text")
+    search_fields = ("id", "name", "answer", "secret_id", "stream__name", "order", "puzzle_text")
     ordering: Optional[Sequence[str]] = ("enabled", "stream", "order")
     actions = ("disable_puzzle", "enable_puzzle")
 
