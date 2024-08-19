@@ -50,6 +50,7 @@ class PuzzleStream(models.Model):
     enabled = models.BooleanField(default=True)
     default = models.BooleanField(default=True)
     locked = models.BooleanField(default=False)
+    online = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return f"{self.name}"
