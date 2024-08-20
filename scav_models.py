@@ -175,7 +175,8 @@ class TeamPuzzleActivity(models.Model):
         return False
 
     def _is_verified(self) -> bool:
-        if self.verification_photo and self.verification_photo.approved or not self.puzzle.require_photo_upload and self.is_completed:
+        if self.verification_photo and self.verification_photo.approved or \
+           not self.puzzle.require_photo_upload and self.is_completed:
             return True
 
         return False
