@@ -121,7 +121,7 @@ class FacilShift(models.Model):
 
     @property
     def facil_count(self) -> int:
-        return len(self.signups)
+        return len(FacilShiftSignup.objects.filter(shift=self))
 
     @property
     def is_cutoff(self) -> bool:
@@ -143,7 +143,7 @@ class FacilShift(models.Model):
 
 class FacilShiftSignup(models.Model):
     user = models.ForeignKey(User, on_delete=CASCADE)
-    shift = models.ForeignKey(FacilShift, on_delete=CASCADE, related_name="signups")
+    shift = models.ForeignKey(FacilShift, on_delete=CASCADE)
     attendance = models.BooleanField(default=False)
 
 
