@@ -123,6 +123,8 @@ class VerificationPhoto(models.Model):
                 logger.warn("Team stream_puzzle puzzle activity already exists for " + str(team) + ": " + str(puzzle))
         self.approved = True
         self.save()
+        team.invalidate_tree = True
+        team.save()
         if puzzle.last_puzzle_in_stream:
             team.free_hints += 1
             team.save()
@@ -203,6 +205,8 @@ class TeamPuzzleActivity(models.Model):
 
         self.puzzle_completed_at = datetime.datetime.now()
         self.save()
+        self.team.invalidate_tree = True
+        self.team.save()
 
         logger.info(f"Puzzle {self.puzzle} marked as completed for team {self.team} at {self.puzzle_completed_at}")
 
