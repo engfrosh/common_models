@@ -52,6 +52,8 @@ class Team(models.Model):
     scav_tree = models.FileField(upload_to=md.tree_path, blank=True, null=True)
     free_hints = models.IntegerField(default=0)
     room = models.CharField("Room Number", max_length=64, blank=True, null=True)
+    invalidate_tree = models.BooleanField(default=True)
+    tree_cache = models.TextField(default="")
 
     class Meta:
         verbose_name = "Team"
@@ -271,6 +273,7 @@ class Team(models.Model):
 
         self.scavenger_finished = False
         self.scavenger_locked_out_until = None
+        self.invalidate_tree = True
         self.save()
 
         # If hints are added they also need to be reset here
@@ -299,6 +302,8 @@ class Team(models.Model):
 
         logger.info(f"Refreshing scavenger progress for team {self}")
         self.check_if_finished_scavenger()
+        self.invalidate_tree = True
+        self.save()
         if self.scavenger_finished:
             return
         activities = md.TeamPuzzleActivity.objects.filter(team=self, puzzle__enabled=True).select_related("puzzle")
