@@ -97,7 +97,7 @@ admin.site.register(InclusivityPage, InclusivityPageAdmin)
 
 
 class FacilShiftAdmin(admin.ModelAdmin):
-    list_display = ('name', 'desc')
+    list_display = ('name', 'desc', 'administrative', 'start', 'end')
     search_fields = ('name', 'desc')
 
 

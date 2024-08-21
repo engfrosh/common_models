@@ -121,7 +121,7 @@ class FacilShift(models.Model):
 
     @property
     def facil_count(self) -> int:
-        return len(self.signups)
+        return len(self.signups.all())
 
     @property
     def is_cutoff(self) -> bool:
