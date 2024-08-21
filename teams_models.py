@@ -301,35 +301,44 @@ class Team(models.Model):
         self.check_if_finished_scavenger()
         if self.scavenger_finished:
             return
-
-        # Get all streams
-        streams = md.PuzzleStream.objects.filter(enabled=True)
-        for s in streams:
-
-            # Get puzzles in stream in reverse order
-            puzzles = s._all_puzzles_qs.reverse()
-            for puz in puzzles:
-
-                # If the team has gotten to the puzzle
-                if self._puzzle_activities_qs.filter(puzzle=puz.id).exists():
-
-                    puz_disabled = not puz.enabled
-                    puz_verified = self._puzzle_activities_qs.filter(puzzle=puz.id).first().is_verified
-
-                    # If the puzzle is now disabled or if the puzzle is now verified
-                    if puz_disabled or puz_verified:
-                        # Move team to next puzzle
-                        next_puzzle = s.get_next_enabled_puzzle(puzzle=puz)
-                        if not next_puzzle:
-                            if self.check_if_finished_scavenger():
-                                return
-                            continue
+        activities = md.TeamPuzzleActivity.objects.filter(team=self, puzzle__enabled=True).select_related("puzzle")
+        disabled = md.TeamPuzzleActivity.objects.filter(team=self, puzzle__enabled=False).select_related("puzzle")
+        for act in activities | disabled:
+            if (act.is_verified and act.is_completed) or not act.puzzle.enabled:
+                if act.puzzle.stream_branch is not None or act.puzzle.stream_puzzle is not None:
+                    if act.puzzle.stream_puzzle is not None:
                         try:
-                            md.TeamPuzzleActivity(team=self, puzzle=next_puzzle).save()
+                            md.TeamPuzzleActivity(team=self, puzzle=act.puzzle.stream_puzzle).save()
                         except Exception:
                             pass  # Activity already exists
-
-        return
+                    if act.puzzle.stream_branch is not None:
+                        next_puz = act.puzzle.stream_branch.first_enabled_puzzle
+                        try:
+                            md.TeamPuzzleActivity(team=self, puzzle=next_puz).save()
+                        except Exception:
+                            pass  # Activity already exists
+                max_order = act.puzzle.order
+                for a2 in activities:
+                    if a2.puzzle.stream == act.puzzle.stream and a2.puzzle.order > max_order:
+                        max_order = a2.puzzle.order
+                if max_order > act.puzzle.order:
+                    if not act.is_completed and not act.puzzle.enabled:
+                        act.delete()
+                    continue
+                next_puz = md.Puzzle.objects.filter(stream=act.puzzle.stream,
+                                                    order__gt=max_order, enabled=True).first()
+                if next_puz is None:
+                    if not act.is_completed and not act.puzzle.enabled:
+                        act.delete()
+                    if self.check_if_finished_scavenger():
+                        return
+                    continue
+                try:
+                    md.TeamPuzzleActivity(team=self, puzzle=next_puz).save()
+                except Exception:
+                    pass  # Activity already exists
+                if not act.is_completed and not act.puzzle.enabled:
+                    act.delete()
 
     def remove_blocks(self):
         """Remove lockouts and cooldowns."""
