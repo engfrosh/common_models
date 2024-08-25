@@ -343,6 +343,10 @@ class UserDetails(models.Model):
     def team(self) -> md.Team:
         return md.Team.from_user(self.user)
 
+    @property
+    def num_shifts(self) -> int:
+        return len(FacilShiftSignup.objects.filter(user=self.user))
+
 
 class FroshRole(models.Model):
     """Frosh role, such as Frosh, Facil, Head, Planning."""

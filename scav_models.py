@@ -414,7 +414,10 @@ class Puzzle(models.Model):
 
         activity = TeamPuzzleActivity.objects.get(team=team.id, puzzle=self.id)
         logger.info(f"Got current puzzle activity for team {team}: {activity}")
-
+        if len(guess) > 100:
+            # Longer string than model holds
+            logger.warn("Team's guess is longer than allowed")
+            return (False, False, None, False)
         # Create a guess object
         pg = PuzzleGuess(value=guess, activity=activity)
         pg.save()

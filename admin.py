@@ -41,7 +41,7 @@ admin.site.register(FAQPage, FAQPageAdmin)
 
 
 class LockoutPeriodAdmin(admin.ModelAdmin):
-    list_display = ("start", "end")
+    list_display = ("start", "end", "branch")
 
 
 admin.site.register(LockoutPeriod, LockoutPeriodAdmin)
