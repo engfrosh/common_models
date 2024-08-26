@@ -82,7 +82,7 @@ def random_token():
 
 # All of the subclasses of models used because this file was >1k lines
 
-from .teams_models import Team, VirtualTeam  # noqa: E402, F401
+from .teams_models import Team, VirtualTeam, TeamRoom  # noqa: E402, F401
 from .scav_models import PuzzleStream, Puzzle, VerificationPhoto  # noqa: E402, F401
 from .scav_models import _puzzle_verification_photo_upload_path  # noqa: E402, F401
 from .scav_models import PuzzleGuess, TeamPuzzleActivity, LockoutPeriod, QRCode  # noqa: E402, F401

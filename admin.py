@@ -9,7 +9,14 @@ from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite
     TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
     UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild, Announcement, \
     Ticket, TicketComment, InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, \
-    Setting, LockoutPeriod, FAQPage, QRCode, RoleOption, SiteImage
+    Setting, LockoutPeriod, FAQPage, QRCode, RoleOption, SiteImage, TeamRoom
+
+
+class TeamRoomAdmin(admin.ModelAdmin):
+    list_display = ("team", "date", "room")
+
+
+admin.site.register(TeamRoom, TeamRoomAdmin)
 
 
 class SiteImageAdmin(admin.ModelAdmin):

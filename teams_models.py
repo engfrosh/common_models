@@ -28,6 +28,12 @@ class VirtualTeam(models.Model):
         return f"<Virtual Team {self.role_id} with {self.num_members} members>"
 
 
+class TeamRoom(models.Model):
+    team = models.ForeignKey('Team', on_delete=CASCADE)
+    date = models.DateField()
+    room = models.CharField("Room Number", max_length=64)
+
+
 class Team(models.Model):
     """Model of frosh team."""
 
@@ -51,7 +57,7 @@ class Team(models.Model):
     logo = models.ImageField(upload_to=md.logo_path, blank=True, null=True)
     scav_tree = models.FileField(upload_to=md.tree_path, blank=True, null=True)
     free_hints = models.IntegerField(default=0)
-    room = models.CharField("Room Number", max_length=64, blank=True, null=True)
+    _room = models.CharField("Room Number", max_length=64, blank=True, null=True)
     invalidate_tree = models.BooleanField(default=True)
     tree_cache = models.TextField(default="")
 
@@ -65,6 +71,15 @@ class Team(models.Model):
 
     def __str__(self):
         return str(self.display_name)
+
+    @property
+    def room(self):
+        rooms = TeamRoom.objects.filter(team=self)
+        today = datetime.date.today()
+        for room in rooms:
+            if room.date == today:
+                return room.room
+        return self._room
 
     @staticmethod
     def from_user(user: User) -> Optional:
