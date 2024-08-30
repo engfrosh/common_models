@@ -266,10 +266,12 @@ class QRCode(models.Model):
     qr_code = models.ImageField(upload_to=md.scavenger_qr_code_path, blank=True, null=True)
 
     def generate_qr_code(self, answer: str) -> None:
+        url_base = md.Setting.objects.get_or_create(id="QR Code URL",
+                                                    defaults={"value": "https://time.engfrosh.com"})[0]
 
         qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
         qr.add_data(
-            "https://" + settings.ALLOWED_HOSTS[0] + "/scavenger/puzzle/" + self.puzzle.secret_id + "?answer=" + answer)
+            url_base + "/scavenger/puzzle/" + self.puzzle.secret_id + "?answer=" + answer)
         qr.make(fit=True)
 
         blob = BytesIO()
