@@ -271,7 +271,7 @@ class QRCode(models.Model):
 
         qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
         qr.add_data(
-            url_base + "/scavenger/puzzle/" + self.puzzle.secret_id + "?answer=" + answer)
+            url_base.value + "/scavenger/puzzle/" + self.puzzle.secret_id + "?answer=" + answer)
         qr.make(fit=True)
 
         blob = BytesIO()
