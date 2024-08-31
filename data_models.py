@@ -17,6 +17,7 @@ class FAQPage(models.Model):
     title = models.CharField("Title", max_length=500)
     body = models.TextField()
     restricted = models.ManyToManyField(Group, blank=True)
+    img = models.ImageField(upload_to=md.img_path, null=True)
 
     @property
     def html_body(self):
