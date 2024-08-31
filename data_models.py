@@ -191,7 +191,7 @@ class UserDetails(models.Model):
     name = models.CharField("Name", max_length=64)
     invite_email_sent = models.BooleanField("Invite Email Sent", default=False)
     checked_in = models.BooleanField("Checked In", default=False)
-    shirt_size = models.CharField("Shirt Size", max_length=5, blank=True)
+    shirt_size = models.CharField("Shirt Size", max_length=50, blank=True)
     override_nick = models.CharField("Name Override", max_length=64, null=True, default=None, blank=True)
     int_frosh_id = models.IntegerField(unique=False, default=0)
     waiver_completed = models.BooleanField("Waiver Completed", default=False)
@@ -206,7 +206,7 @@ class UserDetails(models.Model):
     rafting_paid = models.BooleanField("Rafting Paid", default=False)
     contract = models.BooleanField("Contract Signed", default=False)
     allergies = models.CharField("Allergies", max_length=128, null=True, blank=True)
-    sweater_size = models.CharField("Sweater Size", max_length=5, blank=True)
+    sweater_size = models.CharField("Sweater Size", max_length=50, blank=True)
     discord_allowed = models.BooleanField("Discord Allowed", default=True)
 
     charter = models.FileField(upload_to='charter/', null=True, blank=True)
