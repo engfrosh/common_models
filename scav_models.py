@@ -130,8 +130,11 @@ class VerificationPhoto(models.Model):
             team.save()
         next_puzzle = puzzle.stream.get_next_enabled_puzzle(puzzle)
         if puzzle.stream_branch is not None:
-            branch_activity = TeamPuzzleActivity(team=team, puzzle=puzzle.stream_branch.first_enabled_puzzle)
-            branch_activity.save()
+            try:
+                branch_activity = TeamPuzzleActivity(team=team, puzzle=puzzle.stream_branch.first_enabled_puzzle)
+                branch_activity.save()
+            except Exception:
+                pass
         if puzzle.stream_puzzle is not None:
             try:
                 branch_activity = TeamPuzzleActivity(team=team, puzzle=puzzle.stream_puzzle)
@@ -472,8 +475,11 @@ class Puzzle(models.Model):
             # Otherwise if correct check if done scavenger and if not increment question
             next_puzzle = self.stream.get_next_enabled_puzzle(self)
             if self.stream_branch is not None:
-                branch_activity = TeamPuzzleActivity(team=team, puzzle=self.stream_branch.first_enabled_puzzle)
-                branch_activity.save()
+                try:
+                    branch_activity = TeamPuzzleActivity(team=team, puzzle=self.stream_branch.first_enabled_puzzle)
+                    branch_activity.save()
+                except Exception:
+                    pass
             if self.stream_puzzle is not None:
                 try:
                     branch_activity = TeamPuzzleActivity(team=team, puzzle=self.stream_puzzle)
