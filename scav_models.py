@@ -128,7 +128,7 @@ class VerificationPhoto(models.Model):
         if puzzle.last_puzzle_in_stream:
             team.free_hints += 1
             team.save()
-        next_puzzle = puzzle.stream.get_next_enabled_puzzle(self)
+        next_puzzle = puzzle.stream.get_next_enabled_puzzle(puzzle)
         if puzzle.stream_branch is not None:
             branch_activity = TeamPuzzleActivity(team=team, puzzle=puzzle.stream_branch.first_enabled_puzzle)
             branch_activity.save()
