@@ -313,6 +313,7 @@ class Team(models.Model):
         return True
 
     def refresh_scavenger_progress(self) -> None:
+        return
         """Moves team along if verified on a puzzle or a puzzle has been disabled."""
 
         logger.info(f"Refreshing scavenger progress for team {self}")
