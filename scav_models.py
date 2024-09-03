@@ -128,10 +128,26 @@ class VerificationPhoto(models.Model):
         if puzzle.last_puzzle_in_stream:
             team.free_hints += 1
             team.save()
+        next_puzzle = self.stream.get_next_enabled_puzzle(self)
+        if self.stream_branch is not None:
+            branch_activity = TeamPuzzleActivity(team=team, puzzle=self.stream_branch.first_enabled_puzzle)
+            branch_activity.save()
+        if self.stream_puzzle is not None:
+            try:
+                branch_activity = TeamPuzzleActivity(team=team, puzzle=self.stream_puzzle)
+                branch_activity.save()
+            except Exception:
+                pass
+            logger.info(f"Next puzzle for team {team} is {next_puzzle}")
+
         try:
-            TeamPuzzleActivity.objects.get(verification_photo=self).team.refresh_scavenger_progress()
-        except TeamPuzzleActivity.DoesNotExist:
+            TeamPuzzleActivity(team=team, puzzle=next_puzzle).save()
+        except Exception:
             pass
+        # try:
+        #     TeamPuzzleActivity.objects.get(verification_photo=self).team.refresh_scavenger_progress()
+        # except TeamPuzzleActivity.DoesNotExist:
+        #     pass
 
 
 class TeamPuzzleActivity(models.Model):
