@@ -110,14 +110,14 @@ class VerificationPhoto(models.Model):
         if puzzle.stream_branch is not None:
             first_en = puzzle.stream_branch.first_enabled_puzzle
             if first_en is not None:
-                branch_activity = TeamPuzzleActivity(team=team, puzzle=first_en)
                 try:
+                    branch_activity = TeamPuzzleActivity(team=team, puzzle=first_en)
                     branch_activity.save()
                 except Exception:
                     logger.warn("Team stream puzzle activity already exists for " + str(team) + ": " + str(puzzle))
         if puzzle.stream_puzzle is not None:
-            branch_activity = TeamPuzzleActivity(team=team, puzzle=puzzle.stream_puzzle)
             try:
+                branch_activity = TeamPuzzleActivity(team=team, puzzle=puzzle.stream_puzzle)
                 branch_activity.save()
             except Exception:
                 logger.warn("Team stream_puzzle puzzle activity already exists for " + str(team) + ": " + str(puzzle))
@@ -129,24 +129,11 @@ class VerificationPhoto(models.Model):
             team.free_hints += 1
             team.save()
         next_puzzle = puzzle.stream.get_next_enabled_puzzle(puzzle)
-        if puzzle.stream_branch is not None:
+        if next_puzzle is not None:
             try:
-                branch_activity = TeamPuzzleActivity(team=team, puzzle=puzzle.stream_branch.first_enabled_puzzle)
-                branch_activity.save()
+                TeamPuzzleActivity(team=team, puzzle=next_puzzle).save()
             except Exception:
                 pass
-        if puzzle.stream_puzzle is not None:
-            try:
-                branch_activity = TeamPuzzleActivity(team=team, puzzle=puzzle.stream_puzzle)
-                branch_activity.save()
-            except Exception:
-                pass
-            logger.info(f"Next puzzle for team {team} is {next_puzzle}")
-
-        try:
-            TeamPuzzleActivity(team=team, puzzle=next_puzzle).save()
-        except Exception:
-            pass
         # try:
         #     TeamPuzzleActivity.objects.get(verification_photo=self).team.refresh_scavenger_progress()
         # except TeamPuzzleActivity.DoesNotExist:
@@ -382,20 +369,20 @@ class Puzzle(models.Model):
 
     def puzzle_activity_from_team(self, team: md.Team) -> Optional[TeamPuzzleActivity]:
         try:
-            return TeamPuzzleActivity.objects.get(puzzle=self.id, team=team.id)
+            return TeamPuzzleActivity.objects.get(puzzle=self, team=team)
         except TeamPuzzleActivity.DoesNotExist:
             return None
 
     def is_viewable_for_team(self, team: md.Team) -> bool:
         if not self.enabled:
             return False
-        return TeamPuzzleActivity.objects.filter(puzzle=self.id, team=team.id).exists()
+        return TeamPuzzleActivity.objects.filter(puzzle=self, team=team).exists()
 
     def is_active_for_team(self, team: md.Team) -> bool:
         if not self.enabled:
             return False
 
-        pa: Union[TeamPuzzleActivity, None] = TeamPuzzleActivity.objects.get(puzzle=self.id, team=team.id)
+        pa: Union[TeamPuzzleActivity, None] = TeamPuzzleActivity.objects.get(puzzle=self, team=team)
         if pa:
             return pa.is_active
 
@@ -406,7 +393,7 @@ class Puzzle(models.Model):
         if not self.enabled:
             return False
 
-        pa: Union[TeamPuzzleActivity, None] = TeamPuzzleActivity.objects.get(puzzle=self.id, team=team.id)
+        pa: Union[TeamPuzzleActivity, None] = TeamPuzzleActivity.objects.get(puzzle=self, team=team)
         if pa:
             return pa.is_completed
 
@@ -467,45 +454,15 @@ class Puzzle(models.Model):
 
                 return (correct, False, None, True)
             else:
-                photo = VerificationPhoto(approved=True, photo=None)
+                photo = VerificationPhoto(approved=False, photo=None)
                 photo.save()
                 activity.verification_photo = photo
                 activity.save()
-
-            # Otherwise if correct check if done scavenger and if not increment question
-            next_puzzle = self.stream.get_next_enabled_puzzle(self)
-            if self.stream_branch is not None:
-                try:
-                    branch_activity = TeamPuzzleActivity(team=team, puzzle=self.stream_branch.first_enabled_puzzle)
-                    branch_activity.save()
-                except Exception:
-                    pass
-            if self.stream_puzzle is not None:
-                try:
-                    branch_activity = TeamPuzzleActivity(team=team, puzzle=self.stream_puzzle)
-                    branch_activity.save()
-                except Exception:
-                    pass
-            logger.info(f"Next puzzle for team {team} is {next_puzzle}")
-
-            if not next_puzzle:
-                team.free_hints += 1
-                team.save()
-                team.check_if_finished_scavenger()
-
+                photo.approve()
                 for ch in discord_channels:
-                    ch.send(f"{team.display_name} has completed scavenger stream {self.stream.name}" +
-                            ", awaiting a photo upload.")
-
-                return (correct, True, None, False)
-            try:
-                TeamPuzzleActivity(team=team, puzzle=next_puzzle).save()
-            except Exception:
-                pass
-            for ch in discord_channels:
-                ch.send(f"{team.display_name} has completed puzzle {self.name}, moving on to puzzle {next_puzzle.name}")
-
-            return (correct, False, next_puzzle, False)
+                    ch.send(f"{team.display_name} has completed question {self.name}, no photo upload required.")
+                next_puzzle = self.stream.get_next_enabled_puzzle(self)
+                return (correct, False, next_puzzle, False)
         else:
             for ch in discord_channels:
                 ch.send(f"{team.display_name} has partially completed puzzle {self.name} with {guess}")
