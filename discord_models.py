@@ -14,6 +14,7 @@ from django.contrib.auth.models import User, Group
 import datetime
 import logging
 from django_unixdatetimefield import UnixDateTimeField
+import common_models.models as md
 
 logger = logging.getLogger("common_models.discord_models")
 
@@ -517,3 +518,22 @@ class DiscordUser(models.Model):
         client = get_client()
 
         client.remove_guild_member(user_id=self.id, guild_id=GUILD_ID)
+
+    def compute_name(self):
+        disc_user = self
+        user = disc_user.user
+        details = md.UserDetails.objects.filter(user=user).first()
+        if details.override_nick is not None:
+            return details.override_nick
+        pronouns = details.pronouns
+        name = user.first_name
+        if user.last_name:
+            name += " " + user.last_name[:1]
+        if len(pronouns) > 0:
+            name += " ("
+            for i in range(len(pronouns)-1):
+                if len(name + pronouns[i].name + " ") > 31:
+                    break
+                name += pronouns[i].name + " "
+            name += pronouns[len(pronouns)-1].name + ")"
+        return name
