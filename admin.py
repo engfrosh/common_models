@@ -9,7 +9,57 @@ from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite
     TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
     UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild, Announcement, \
     Ticket, TicketComment, InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, \
-    Setting, LockoutPeriod, FAQPage, QRCode, RoleOption, SiteImage, TeamRoom
+    Setting, LockoutPeriod, FAQPage, QRCode, RoleOption, SiteImage, TeamRoom, Event, \
+    Calendar, CalendarRelation, EventRelation, Pronoun, PronounOption, DiscordMessage
+
+
+class DiscordMessageAdmin(admin.ModelAdmin):
+    list_display = ("type", "id")
+
+
+admin.site.register(DiscordMessage, DiscordMessageAdmin)
+
+
+class PronounAdmin(admin.ModelAdmin):
+    list_display = ("name", "order", "user")
+
+
+admin.site.register(Pronoun, PronounAdmin)
+
+
+class PronounOptionAdmin(admin.ModelAdmin):
+    list_display = ("emote", "name")
+
+
+admin.site.register(PronounOption, PronounOptionAdmin)
+
+
+class EventRelationAdmin(admin.ModelAdmin):
+    list_display = ("event", "content_type", "object_id")
+
+
+admin.site.register(EventRelation, EventRelationAdmin)
+
+
+class CalendarAdmin(admin.ModelAdmin):
+    list_display = ("name", "slug")
+
+
+admin.site.register(Calendar, CalendarAdmin)
+
+
+class CalendarRelationAdmin(admin.ModelAdmin):
+    list_display = ("calendar", "content_type", "object_id")
+
+
+admin.site.register(CalendarRelation, CalendarRelationAdmin)
+
+
+class EventAdmin(admin.ModelAdmin):
+    list_display = ("title", "start", "end")
+
+
+admin.site.register(Event, EventAdmin)
 
 
 class TeamRoomAdmin(admin.ModelAdmin):

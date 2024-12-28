@@ -98,6 +98,9 @@ from .ticket_models import Ticket, TicketComment  # noqa: E402, F401
 from .euchre_models import EuchrePlayer, EuchreTrick, EuchreTeam, EuchreCard  # noqa: E402, F401
 from .euchre_models import EuchreGame  # noqa: E402, F401
 from .robert_models import RobertEntry  # noqa: E402, F401
+from .calendar_models import EventManager, Event, EventRelationManager, EventRelation  # noqa: E402, F401
+from .calendar_models import Occurrence, CalendarManager, Calendar, CalendarRelationManager  # noqa: E402, F401
+from .calendar_models import Rule, CalendarRelation  # noqa: E402, F401
 logger = logging.getLogger("common_models.models")
 
 

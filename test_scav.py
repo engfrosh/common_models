@@ -98,4 +98,4 @@ class ScavUnorderedTests(TestCase):
         self.assertNotEqual(result[2], None)
         self.assertNotEqual(TeamPuzzleActivity.objects.filter(team=self.team1, puzzle=self.test41).first(), None)
 
-        self.team1 = Team.objects.filter(group=Group.objects.filter(name="T1"))
+        self.team1 = Team.objects.filter(group=Group.objects.filter(name="T1").first()).first()
