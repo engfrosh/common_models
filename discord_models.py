@@ -529,7 +529,7 @@ class DiscordUser(models.Model):
         name = user.first_name
         if user.last_name:
             name += " " + user.last_name[:1]
-        if len(pronouns) > 0:
+        if pronouns is not None and len(pronouns) > 0:
             name += " ("
             for i in range(len(pronouns)-1):
                 if len(name + pronouns[i].name + " ") > 31:
