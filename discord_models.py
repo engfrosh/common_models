@@ -526,7 +526,9 @@ class DiscordUser(models.Model):
             return details.override_nick
         pronouns = details.pronouns
         name = user.first_name
-        if user.last_name:
+        if user.first_name is None and user.last_name:
+            name = user.last_name
+        elif user.last_name:
             name += " " + user.last_name[:1]
         if pronouns is not None and len(pronouns) > 0:
             name += " ("
