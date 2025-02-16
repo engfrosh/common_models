@@ -235,7 +235,7 @@ class DiscordChannelAdmin(admin.ModelAdmin):
         lock_discord_channels,
         unlock_discord_channels
     ]
-    search_fields = ('name', 'team')
+    search_fields = ('name', 'team__display_name')
 
 
 class ChannelTagAdmin(admin.ModelAdmin):
