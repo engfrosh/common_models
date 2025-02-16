@@ -208,7 +208,7 @@ admin.site.register(DiscordRole, DiscordRoleAdmin)
 
 
 class DiscordOverwriteAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ('descriptive_name',)
 
 # region Discord Channels & Channel Tags
 
@@ -235,6 +235,7 @@ class DiscordChannelAdmin(admin.ModelAdmin):
         lock_discord_channels,
         unlock_discord_channels
     ]
+    search_fields = ('name', 'team')
 
 
 class ChannelTagAdmin(admin.ModelAdmin):
@@ -243,6 +244,7 @@ class ChannelTagAdmin(admin.ModelAdmin):
         lock_discord_channels,
         unlock_discord_channels
     ]
+    search_fields = ('name',)
 # endregion
 
 
