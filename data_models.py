@@ -193,7 +193,7 @@ class UserDetails(models.Model):
     checked_in = models.BooleanField("Checked In", default=False)
     shirt_size = models.CharField("Shirt Size", max_length=50, blank=True)
     override_nick = models.CharField("Name Override", max_length=64, null=True, default=None, blank=True)
-    int_frosh_id = models.IntegerField(unique=False, default=0)
+    int_frosh_id = models.CharField(unique=False, default=None, null=True, blank=True, max_length=8)
     waiver_completed = models.BooleanField("Waiver Completed", default=False)
     prc_completed = models.BooleanField("PRC Completed", default=False)
     brightspace_completed = models.BooleanField("Brightspace Training Completed", default=False)
@@ -316,27 +316,13 @@ class UserDetails(models.Model):
 
     @property
     def frosh_id(self) -> int:
-        if self.int_frosh_id == 0:
+        if self.int_frosh_id == None:
             self.generate_frosh_id()
         return self.int_frosh_id
 
-    def generate_checksum(self, id) -> int:
-        checksum = 0  # Basically just a Luhn checksum
-        double = True
-        while id > 0:
-            if double:
-                checksum += (id % 10) * 2
-            else:
-                checksum += id % 10
-            id = id // 10
-            double = not double
-        return checksum % 10
-
     def generate_frosh_id(self) -> None:
-        id = 70000 + self.user.id
-        checksum = self.generate_checksum(id)
-        id = id * 10 + checksum
-        self.int_frosh_id = id
+        alphabet = string.ascii_lowercase + string.digits
+        self.int_frosh_id = ''.join(random.choices(alphabet, k=8))
         self.save()
 
     @property
