@@ -1,7 +1,6 @@
 from django.db import models
 from django.db.models.deletion import CASCADE, SET_NULL
 from django.contrib.auth.models import User, Group
-from django_unixdatetimefield import UnixDateTimeField
 import common_models.models as md
 import datetime
 from django.utils.html import escape
@@ -90,7 +89,7 @@ class FAQPage(models.Model):
 class InclusivityPage(models.Model):
     name = models.CharField("Name", max_length=128)
     permissions = models.IntegerField()
-    open_time = UnixDateTimeField()
+    open_time = models.DateTimeField()
     file = models.FileField(upload_to=md.inclusivity_path)
 
 
@@ -99,8 +98,8 @@ class FacilShift(models.Model):
     name = models.CharField("Name", max_length=128)
     desc = models.CharField("Description", max_length=1000)
     flags = models.CharField("Flags", max_length=5)
-    start = UnixDateTimeField(null=True, blank=True)
-    end = UnixDateTimeField(null=True, blank=True)
+    start = models.DateTimeField(null=True, blank=True)
+    end = models.DateTimeField(null=True, blank=True)
     max_facils = models.IntegerField()
     administrative = models.BooleanField("Administrative", blank=True, default=False)
     checkin_user = models.ForeignKey(User, null=True, blank=True, on_delete=SET_NULL)
@@ -384,7 +383,7 @@ class Setting(models.Model):
 
 class Announcement(models.Model):
     id = models.AutoField("Announcement ID", primary_key=True)
-    created = UnixDateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now=True)
     title = models.CharField(max_length=200)
     body = models.TextField()
 

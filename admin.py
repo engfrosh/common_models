@@ -8,7 +8,7 @@ from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite
     FroshRole, Puzzle, PuzzleGuess, PuzzleStream, Team, DiscordUser, MagicLink, \
     TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
     UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild, Announcement, \
-    Ticket, TicketComment, InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, \
+    InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, \
     Setting, LockoutPeriod, FAQPage, QRCode, RoleOption, SiteImage, TeamRoom, Event, \
     Calendar, CalendarRelation, EventRelation, Pronoun, PronounOption, DiscordMessage
 
@@ -173,20 +173,6 @@ class FacilShiftSignupAdmin(admin.ModelAdmin):
 
 admin.site.register(FacilShiftSignup, FacilShiftSignupAdmin)
 
-
-# region Ticket
-
-
-class TicketAdmin(admin.ModelAdmin):
-    pass
-
-
-class TicketCommentAdmin(admin.ModelAdmin):
-    pass
-
-
-admin.site.register(Ticket, TicketAdmin)
-admin.site.register(TicketComment, TicketCommentAdmin)
 
 # region Announcement
 

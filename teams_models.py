@@ -5,7 +5,6 @@ import logging
 from django.db.models.deletion import CASCADE
 from typing import List, Optional
 from django.contrib.auth.models import User, Group
-from django_unixdatetimefield import UnixDateTimeField
 
 import common_models.models as md
 
@@ -43,7 +42,7 @@ class Team(models.Model):
 
     scavenger_team = models.BooleanField(default=True)
     scavenger_finished = models.BooleanField("Finished Scavenger", default=False)
-    scavenger_locked_out_until = UnixDateTimeField(blank=True, null=True, default=None)
+    scavenger_locked_out_until = models.BigIntegerField("Scavenger Locked Out Until", default=0)
     scavenger_enabled_for_team = models.BooleanField(default=True)
 
     trade_up_team = models.BooleanField(default=True)
@@ -102,12 +101,12 @@ class Team(models.Model):
         activities = md.TeamPuzzleActivity.objects \
             .filter(puzzle__stream__in=main_streams, team=self,
                     puzzle__enabled=True, verification_photo__approved=True) \
-            .exclude(puzzle_completed_at=0)
+            .exclude(puzzle_completed_at=None)
         return len(activities)
 
     @property
     def last_puzzle_timestamp(self) -> str:
-        activity = md.TeamPuzzleActivity.objects.filter(team=self).exclude(puzzle_completed_at=0)
+        activity = md.TeamPuzzleActivity.objects.filter(team=self).exclude(puzzle_completed_at=None)
         activity = activity.order_by("-puzzle_completed_at").first()
         if activity is None:
             return "N/A"
@@ -151,7 +150,7 @@ class Team(models.Model):
     def active_puzzles(self) -> List:
         result = []
         query = md.TeamPuzzleActivity.objects.select_related("puzzle") \
-                  .filter(team=self, puzzle_completed_at=0, puzzle__stream__locked=False) \
+                  .filter(team=self, puzzle_completed_at=None, puzzle__stream__locked=False) \
                   .order_by("puzzle__order")
         for a in query:
             result += [a.puzzle]
@@ -161,7 +160,7 @@ class Team(models.Model):
     def completed_puzzles(self) -> List:
         result = []
         query = md.TeamPuzzleActivity.objects.select_related("puzzle") \
-                  .filter(team=self).exclude(puzzle_completed_at=0).order_by("puzzle__order")
+                  .filter(team=self).exclude(puzzle_completed_at=None).order_by("puzzle__order")
         for a in query:
             result += [a.puzzle]
         return result
@@ -200,7 +199,7 @@ class Team(models.Model):
     def completed_puzzles_requiring_photo_upload(self) -> List:
         result = []
         query = md.TeamPuzzleActivity.objects.select_related("puzzle").filter(team=self, verification_photo=None) \
-                  .exclude(puzzle_completed_at=0).order_by("puzzle__order")
+                  .exclude(puzzle_completed_at=None).order_by("puzzle__order")
         for a in query:
             result += [a.puzzle]
         return result
@@ -210,20 +209,27 @@ class Team(models.Model):
 
     @property
     def scavenger_locked(self) -> bool:
-        now = timezone.now()
+        now = int(timezone.now().timestamp())
         for period in md.LockoutPeriod.objects.filter(branch=None):
-            if period.start <= now and period.end >= now:
+            if int(period.start.timestamp()) <= now and int(period.end.timestamp()) >= now:
                 return True
-        if self.scavenger_locked_out_until is None:
+        if self.scavenger_locked_out_until == 0:
             return False
         if self.scavenger_locked_out_until <= now:
-            self.scavenger_locked_out_until = None
+            self.scavenger_locked_out_until = 0
             self.save()
             return False
         return True
 
+    @property
+    def scavenger_locked_datetime(self) -> str:
+        if self.scavenger_locked_out_until == 0:
+            return "Unlocked"
+        dt = datetime.datetime.fromtimestamp(self.scavenger_locked_out_until)
+        return dt.strftime("%Y-%m-%d %H:%M:%S")
+
     def scavenger_lock(self, minutes) -> None:
-        self.scavenger_locked_out_until = timezone.now() + timezone.timedelta(minutes=minutes)
+        self.scavenger_locked_out_until = int(timezone.now().timestamp()) + minutes * 60
         self.save()
 
     @property

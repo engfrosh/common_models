@@ -1,5 +1,4 @@
 from django.db import models
-from django_unixdatetimefield import UnixDateTimeField
 import logging
 from io import BytesIO
 from django.db.models.deletion import CASCADE, PROTECT, SET_NULL
@@ -24,15 +23,15 @@ def _puzzle_verification_photo_upload_path(instance, filename) -> str:
 
 
 class LockoutPeriod(models.Model):
-    start = UnixDateTimeField()
-    end = UnixDateTimeField()
+    start = models.DateTimeField()
+    end = models.DateTimeField()
     branch = models.ForeignKey('PuzzleStream', on_delete=CASCADE, null=True, blank=True)
 
 
 class PuzzleGuess(models.Model):
     """Stores all the guesses for scavenger."""
 
-    datetime = UnixDateTimeField(auto_now=True)
+    datetime = models.DateTimeField(auto_now=True)
     value = models.CharField(max_length=100)
     activity = models.ForeignKey('TeamPuzzleActivity', on_delete=CASCADE)
 
@@ -91,7 +90,7 @@ class PuzzleStream(models.Model):
 class VerificationPhoto(models.Model):
     """Stores references to all the uploaded photos for scavenger puzzle verification."""
 
-    datetime = UnixDateTimeField(auto_now=True)
+    datetime = models.DateTimeField(auto_now=True)
     photo = models.ImageField(upload_to=_puzzle_verification_photo_upload_path, null=True)
     approved = models.BooleanField(default=False)
 
@@ -145,8 +144,8 @@ class TeamPuzzleActivity(models.Model):
 
     team = models.ForeignKey(md.Team, on_delete=CASCADE)
     puzzle = models.ForeignKey('Puzzle', on_delete=CASCADE)
-    puzzle_start_at = UnixDateTimeField(auto_now=True)
-    puzzle_completed_at = UnixDateTimeField(null=True, blank=True, default=None)
+    puzzle_start_at = models.DateTimeField(auto_now=True)
+    puzzle_completed_at = models.DateTimeField(null=True, blank=True, default=None)
     verification_photo = models.ForeignKey(VerificationPhoto, on_delete=SET_NULL, null=True, blank=True, default=None)
     completed_bitmask = models.IntegerField(default=0)
 
@@ -162,7 +161,7 @@ class TeamPuzzleActivity(models.Model):
         activities = TeamPuzzleActivity.objects \
                      .filter(puzzle__stream=self.puzzle.stream, team=self.team,
                              puzzle__enabled=True, verification_photo__approved=True) \
-                     .exclude(puzzle_completed_at=0)
+                     .exclude(puzzle_completed_at=None)
         return len(activities)
 
     @property
@@ -334,8 +333,8 @@ class Puzzle(models.Model):
     puzzle_file_is_image = models.BooleanField(default=False)
     puzzle_is_link = models.BooleanField(default=False)
 
-    created_at = UnixDateTimeField(auto_now_add=True)
-    updated_at = UnixDateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     stream_branch = models.ForeignKey(PuzzleStream, on_delete=CASCADE, null=True, blank=True, default=None, related_name='branch_puzzle')  # noqa: E501
     stream_puzzle = models.ForeignKey("Puzzle", on_delete=SET_NULL, blank=True, null=True, related_name='puzzle_opener')
