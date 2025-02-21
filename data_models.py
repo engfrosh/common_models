@@ -4,6 +4,7 @@ from django.contrib.auth.models import User, Group
 import common_models.models as md
 import datetime
 from django.utils.html import escape
+import string
 
 
 class SiteImage(models.Model):
