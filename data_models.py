@@ -5,6 +5,7 @@ from django_unixdatetimefield import UnixDateTimeField
 import common_models.models as md
 import datetime
 from django.utils.html import escape
+import random
 
 
 class SiteImage(models.Model):
