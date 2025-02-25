@@ -1,11 +1,11 @@
 from django.db import models
 from django.db.models.deletion import CASCADE, SET_NULL
 from django.contrib.auth.models import User, Group
-from django_unixdatetimefield import UnixDateTimeField
 import common_models.models as md
 import datetime
 from django.utils.html import escape
 import random
+import string
 
 
 class SiteImage(models.Model):
@@ -91,7 +91,7 @@ class FAQPage(models.Model):
 class InclusivityPage(models.Model):
     name = models.CharField("Name", max_length=128)
     permissions = models.IntegerField()
-    open_time = UnixDateTimeField()
+    open_time = models.DateTimeField()
     file = models.FileField(upload_to=md.inclusivity_path)
 
 
@@ -100,8 +100,8 @@ class FacilShift(models.Model):
     name = models.CharField("Name", max_length=128)
     desc = models.CharField("Description", max_length=1000)
     flags = models.CharField("Flags", max_length=5)
-    start = UnixDateTimeField(null=True, blank=True)
-    end = UnixDateTimeField(null=True, blank=True)
+    start = models.DateTimeField(null=True, blank=True)
+    end = models.DateTimeField(null=True, blank=True)
     max_facils = models.IntegerField()
     administrative = models.BooleanField("Administrative", blank=True, default=False)
     checkin_user = models.ForeignKey(User, null=True, blank=True, on_delete=SET_NULL)
@@ -195,7 +195,7 @@ class UserDetails(models.Model):
     checked_in = models.BooleanField("Checked In", default=False)
     shirt_size = models.CharField("Shirt Size", max_length=50, blank=True)
     override_nick = models.CharField("Name Override", max_length=64, null=True, default=None, blank=True)
-    int_frosh_id = models.IntegerField(unique=False, default=0)
+    int_frosh_id = models.CharField(unique=False, default=None, null=True, blank=True, max_length=8)
     waiver_completed = models.BooleanField("Waiver Completed", default=False)
     prc_completed = models.BooleanField("PRC Completed", default=False)
     brightspace_completed = models.BooleanField("Brightspace Training Completed", default=False)
@@ -318,27 +318,13 @@ class UserDetails(models.Model):
 
     @property
     def frosh_id(self) -> int:
-        if self.int_frosh_id == 0:
+        if self.int_frosh_id == None:
             self.generate_frosh_id()
         return self.int_frosh_id
 
-    def generate_checksum(self, id) -> int:
-        checksum = 0  # Basically just a Luhn checksum
-        double = True
-        while id > 0:
-            if double:
-                checksum += (id % 10) * 2
-            else:
-                checksum += id % 10
-            id = id // 10
-            double = not double
-        return checksum % 10
-
     def generate_frosh_id(self) -> None:
-        id = 70000 + self.user.id
-        checksum = self.generate_checksum(id)
-        id = id * 10 + checksum
-        self.int_frosh_id = id
+        alphabet = string.ascii_lowercase + string.digits
+        self.int_frosh_id = ''.join(random.choices(alphabet, k=8))
         self.save()
 
     @property
@@ -385,7 +371,7 @@ class Setting(models.Model):
 
 class Announcement(models.Model):
     id = models.AutoField("Announcement ID", primary_key=True)
-    created = UnixDateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now=True)
     title = models.CharField(max_length=200)
     body = models.TextField()
 

@@ -8,7 +8,7 @@ from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite
     FroshRole, Puzzle, PuzzleGuess, PuzzleStream, Team, DiscordUser, MagicLink, \
     TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
     UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild, Announcement, \
-    Ticket, TicketComment, InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, \
+    InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, \
     Setting, LockoutPeriod, FAQPage, QRCode, RoleOption, SiteImage, TeamRoom, Event, \
     Calendar, CalendarRelation, EventRelation, Pronoun, PronounOption, DiscordMessage
 
@@ -174,20 +174,6 @@ class FacilShiftSignupAdmin(admin.ModelAdmin):
 admin.site.register(FacilShiftSignup, FacilShiftSignupAdmin)
 
 
-# region Ticket
-
-
-class TicketAdmin(admin.ModelAdmin):
-    pass
-
-
-class TicketCommentAdmin(admin.ModelAdmin):
-    pass
-
-
-admin.site.register(Ticket, TicketAdmin)
-admin.site.register(TicketComment, TicketCommentAdmin)
-
 # region Announcement
 
 
@@ -208,7 +194,7 @@ admin.site.register(DiscordRole, DiscordRoleAdmin)
 
 
 class DiscordOverwriteAdmin(admin.ModelAdmin):
-    pass
+    search_fields = ('descriptive_name',)
 
 # region Discord Channels & Channel Tags
 
@@ -235,6 +221,7 @@ class DiscordChannelAdmin(admin.ModelAdmin):
         lock_discord_channels,
         unlock_discord_channels
     ]
+    search_fields = ('name', 'team__display_name')
 
 
 class ChannelTagAdmin(admin.ModelAdmin):
@@ -243,6 +230,7 @@ class ChannelTagAdmin(admin.ModelAdmin):
         lock_discord_channels,
         unlock_discord_channels
     ]
+    search_fields = ('name',)
 # endregion
 
 

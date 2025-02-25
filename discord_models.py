@@ -13,7 +13,6 @@ from django.conf import settings
 from django.contrib.auth.models import User, Group
 import datetime
 import logging
-from django_unixdatetimefield import UnixDateTimeField
 import common_models.models as md
 
 logger = logging.getLogger("common_models.discord_models")
@@ -488,7 +487,7 @@ class DiscordUser(models.Model):
     discriminator = models.IntegerField(blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, db_index=True)
     access_token = models.CharField(max_length=40, blank=True)
-    expiry = UnixDateTimeField(blank=True, null=True)
+    expiry = models.DateTimeField(blank=True, null=True)
     refresh_token = models.CharField(max_length=40, blank=True)
 
     class Meta:
@@ -527,7 +526,9 @@ class DiscordUser(models.Model):
             return details.override_nick
         pronouns = details.pronouns
         name = user.first_name
-        if user.last_name:
+        if user.first_name is None and user.last_name:
+            name = user.last_name
+        elif user.last_name:
             name += " " + user.last_name[:1]
         if pronouns is not None and len(pronouns) > 0:
             name += " ("
