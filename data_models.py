@@ -318,7 +318,7 @@ class UserDetails(models.Model):
 
     @property
     def frosh_id(self) -> int:
-        if self.int_frosh_id == None:
+        if self.int_frosh_id is None:
             self.generate_frosh_id()
         return self.int_frosh_id
 
