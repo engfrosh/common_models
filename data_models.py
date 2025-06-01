@@ -197,6 +197,7 @@ class UserDetails(models.Model):
     override_nick = models.CharField("Name Override", max_length=64, null=True, default=None, blank=True)
     int_frosh_id = models.CharField(unique=False, default=None, null=True, blank=True, max_length=8)
     waiver_completed = models.BooleanField("Waiver Completed", default=False)
+    wt_waiver_completed = models.BooleanField("Wilderness Tours Waiver Completed", default=False)
     prc_completed = models.BooleanField("PRC Completed", default=False)
     brightspace_completed = models.BooleanField("Brightspace Training Completed", default=False)
     training_completed = models.BooleanField("In Person Training Completed", default=False)
@@ -293,7 +294,7 @@ class UserDetails(models.Model):
         if role == "Frosh":
             req = md.Setting.objects.get_or_create(id="Frosh_Checkin_Req",
                                                    defaults={"value": "waiver"})[0].value.split(",")
-            if "waiver" in req and not self.waiver_completed:
+            if "waiver" in req and not self.waiver_completed or not self.wt_waiver_completed:
                 reason += "Waiver "
         else:
             req = md.Setting.objects.get_or_create(id="Facil_Checkin_Req",
