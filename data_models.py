@@ -103,6 +103,8 @@ class FacilShift(models.Model):
     start = models.DateTimeField(null=True, blank=True)
     end = models.DateTimeField(null=True, blank=True)
     max_facils = models.IntegerField()
+    max_facils_per_team = models.IntegerField(default=0)
+    signups_start = models.DateTimeField(null=True, blank=True)
     administrative = models.BooleanField("Administrative", blank=True, default=False)
     checkin_user = models.ForeignKey(User, null=True, blank=True, on_delete=SET_NULL)
     type = models.CharField("Type", max_length=50, blank=True, null=True)
@@ -125,9 +127,32 @@ class FacilShift(models.Model):
     def facil_count(self) -> int:
         return len(self.signups.all())
 
+    def facil_count_on_team(self, team: md.Team) -> int:
+        signups = self.signups.all().select_related("user__details")
+        count = 0
+        for s in signups:
+            if s.user.details.team == team:
+                count += 1
+        return count
+
+    def can_sign_up(self, userdetails):
+        if self.administrative:
+            return False
+        if self.is_cutoff:
+            return False
+        if self.is_passed:
+            return False
+        if self.max_facils != 0 and self.facil_count >= self.max_facils:
+            return False
+        if self.max_facils_per_team != 0 and self.facil_count_on_team(userdetails.team) >= self.max_facils_per_team:
+            return False
+        return True
+
     @property
     def is_cutoff(self) -> bool:
         if self.administrative:
+            return True
+        if self.signups_start is not None and datetime.datetime.now().timestamp() < self.signups_start.timestamp():
             return True
         # Defaults to 72h
         window = int(md.Setting.objects.get_or_create(id="Facil Shift Cutoff",
