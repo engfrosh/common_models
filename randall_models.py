@@ -1,8 +1,8 @@
 from django.db import models
-from django.db.models.deletion import CASCADE, SET_NULL
-from django.contrib.auth.models import User, Group
-import common_models.models as md
+from django.db.models.deletion import CASCADE
+from django.contrib.auth.models import User
 import geopy.distance
+
 
 class RandallBooking(models.Model):
     user = models.ForeignKey(User, on_delete=CASCADE)
@@ -17,6 +17,7 @@ class RandallBooking(models.Model):
         ("view_randall", "Can view randall")
     ]
 
+
 class RandallLocation(models.Model):
     latitude = models.FloatField()
     longitude = models.FloatField()
@@ -26,8 +27,9 @@ class RandallLocation(models.Model):
     CAMPUS = (45.387096, -75.695891)
 
     @property
-    def is_on_campus():
-        return geopy.distance.geodesic(CAMPUS, (latitude, longitude)).km <= 1.0
+    def is_on_campus(self):
+        return geopy.distance.geodesic(self.CAMPUS, (self.latitude, self.longitude)).km <= 1.0
+
 
 class RandallBlocked(models.Model):
     start = models.DateTimeField()
