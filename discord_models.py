@@ -382,11 +382,24 @@ class DiscordChannel(models.Model):
         ChannelTag.objects.get_or_create(name="MANAGEMENT_UPDATES_CHANNEL")
 
         return list(DiscordChannel.objects.filter(tags__name="MANAGEMENT_UPDATES_CHANNEL"))
+    
+    @staticmethod
+    def backstage_updates_channels() -> List:
+        ChannelTag.objects.get_or_create(name="BACKSTAGE_UPDATES_CHANNEL")
+
+        return list(DiscordChannel.objects.filter(tags__name="BACKSTAGE_UPDATES_CHANNEL"))
+    
 
     @staticmethod
     def send_to_updates_channels(content) -> None:
         for ch in DiscordChannel.updates_channels():
             ch.send(content=content)
+    
+    @staticmethod
+    def send_to_backstage_updates_channels(content) -> None:
+        for ch in DiscordChannel.backstage_updates_channels():
+            ch.send(content=content)
+    
 
     def compute_name(self):
         if self.team is None:

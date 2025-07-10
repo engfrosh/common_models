@@ -10,7 +10,29 @@ from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite
     UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild, Announcement, \
     InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, \
     Setting, LockoutPeriod, FAQPage, QRCode, RoleOption, SiteImage, TeamRoom, Event, \
-    Calendar, CalendarRelation, EventRelation, Pronoun, PronounOption, DiscordMessage
+    Calendar, CalendarRelation, EventRelation, Pronoun, PronounOption, DiscordMessage, \
+    RandallBooking, RandallBlocked, RandallLocation
+
+
+class RandallBookingAdmin(admin.ModelAdmin):
+    list_display = ("user", "start", "end", "approved", "message")
+
+
+admin.site.register(RandallBooking, RandallBookingAdmin)
+
+
+class RandallLocationAdmin(admin.ModelAdmin):
+    list_display = ("latitude", "longitude", "altitude", "timestamp")
+
+
+admin.site.register(RandallLocation, RandallLocationAdmin)
+
+
+class RandallBlockedAdmin(admin.ModelAdmin):
+    list_display = ("start", "end")
+
+
+admin.site.register(RandallBlocked, RandallBlockedAdmin)
 
 
 class DiscordMessageAdmin(admin.ModelAdmin):

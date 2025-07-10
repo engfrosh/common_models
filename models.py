@@ -97,6 +97,7 @@ from .trade_models import TeamTradeUpActivity  # noqa: E402, F401
 from .calendar_models import EventManager, Event, EventRelationManager, EventRelation  # noqa: E402, F401
 from .calendar_models import Occurrence, CalendarManager, Calendar, CalendarRelationManager  # noqa: E402, F401
 from .calendar_models import Rule, CalendarRelation  # noqa: E402, F401
+from .randall_models import RandallBlocked, RandallBooking, RandallLocation  # noqa: E402, F401
 logger = logging.getLogger("common_models.models")
 
 
