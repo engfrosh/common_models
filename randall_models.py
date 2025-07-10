@@ -10,12 +10,13 @@ class RandallBooking(models.Model):
     end = models.DateTimeField()
     message = models.TextField()
     approved = models.BooleanField(default=False)
-    permissions = [
-        ("book_randall", "Can create bookings"),
-        ("manage_randall", "Can manage bookings"),
-        ("locate_randall", "Can send location data through the API"),
-        ("view_randall", "Can view randall")
-    ]
+    class Meta:
+        permissions = [
+            ("book_randall", "Can create bookings"),
+            ("manage_randall", "Can manage bookings"),
+            ("locate_randall", "Can send location data through the API"),
+            ("view_randall", "Can view randall")
+        ]
 
 
 class RandallLocation(models.Model):
