@@ -235,6 +235,7 @@ class UserDetails(models.Model):
     allergies = models.CharField("Allergies", max_length=128, null=True, blank=True)
     sweater_size = models.CharField("Sweater Size", max_length=50, blank=True)
     discord_allowed = models.BooleanField("Discord Allowed", default=True)
+    wt_waiver_completed = models.BooleanField("WT Waiver Completed", default=False)
 
     charter = models.FileField(upload_to='charter/', null=True, blank=True)
 
@@ -285,12 +286,16 @@ class UserDetails(models.Model):
                                                    defaults={"value": "waiver"})[0].value.split(",")
             if "waiver" in req and not self.waiver_completed:
                 return False
+            if "wt" in req and not self.wt_waiver_completed:
+                return False
             return True
         else:
             req = md.Setting.objects.get_or_create(id="Facil_Checkin_Req",
                                                    defaults={"value": "waiver,brightspace,prc,contract,paid"})[0]
             req = req.value.split(",")
             if "waiver" in req and not self.waiver_completed:
+                return False
+            if "wt" in req and not self.wt_waiver_completed:
                 return False
             if "brightspace" in req and not self.brightspace_completed:
                 return False
@@ -320,12 +325,16 @@ class UserDetails(models.Model):
                                                    defaults={"value": "waiver"})[0].value.split(",")
             if "waiver" in req and not self.waiver_completed:
                 reason += "Waiver "
+            if "wt" in req and not self.wt_waiver_completed:
+                reason += "WT Waiver "
         else:
             req = md.Setting.objects.get_or_create(id="Facil_Checkin_Req",
                                                    defaults={"value": "waiver,brightspace,prc,contract,paid"})[0]
             req = req.value.split(",")
             if "waiver" in req and not self.waiver_completed:
                 reason += "Waiver "
+            if "wt" in req and not self.wt_waiver_completed:
+                reason += "WT Waiver "
             if "brightspace" in req and not self.brightspace_completed:
                 reason += "Brightspace "
             if "prc" in req and not self.prc_completed:
