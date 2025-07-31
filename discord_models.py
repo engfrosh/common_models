@@ -497,9 +497,9 @@ class DiscordUser(models.Model):
     discord_username = models.CharField(max_length=500, blank=True)
     discriminator = models.IntegerField(blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, db_index=True)
-    access_token = models.CharField(max_length=40, blank=True)
+    access_token = models.CharField(max_length=100, blank=True)
     expiry = models.DateTimeField(blank=True, null=True)
-    refresh_token = models.CharField(max_length=40, blank=True)
+    refresh_token = models.CharField(max_length=100, blank=True)
 
     class Meta:
         """Meta information for Discord Users."""
