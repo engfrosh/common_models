@@ -293,7 +293,7 @@ class Team(models.Model):
                 pa.save()
 
         self.scavenger_finished = False
-        self.scavenger_locked_out_until = None
+        self.scavenger_locked_out_until = 0
         self.invalidate_tree = True
         self.save()
 
