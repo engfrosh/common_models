@@ -12,6 +12,11 @@ class SiteImage(models.Model):
     name = models.CharField("Name", max_length=100)
     image = models.ImageField(upload_to=md.img_path, null=True)
 
+class SponsorLogo(models.Model):
+    name = models.CharField("Name", max_length=100)
+    image = models.ImageField(upload_to=md.img_path, null=True)
+    footer = models.BooleanField(default=False)
+    link = models.CharField("Link", max_length=256)
 
 class FAQPage(models.Model):
     id = models.AutoField("Page ID", primary_key=True)

@@ -11,7 +11,7 @@ from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite
     InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, \
     Setting, LockoutPeriod, FAQPage, QRCode, RoleOption, SiteImage, TeamRoom, Event, \
     Calendar, CalendarRelation, EventRelation, Pronoun, PronounOption, DiscordMessage, \
-    RandallBooking, RandallBlocked, RandallLocation
+    RandallBooking, RandallBlocked, RandallLocation, SponsorLogo
 
 
 class RandallBookingAdmin(admin.ModelAdmin):
@@ -19,6 +19,13 @@ class RandallBookingAdmin(admin.ModelAdmin):
 
 
 admin.site.register(RandallBooking, RandallBookingAdmin)
+
+
+class SponsorLogoAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+
+
+admin.site.register(SponsorLogo, SponsorLogoAdmin)
 
 
 class RandallLocationAdmin(admin.ModelAdmin):
