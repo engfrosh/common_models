@@ -94,7 +94,7 @@ class MagicLink(models.Model):
         with_text = Image.new(mode="RGB", size=(width, height + 50))
         draw = ImageDraw.Draw(with_text)
         draw.rectangle([(0, 0), with_text.size], fill=(255, 255, 255))
-        with_text.paste(img, (offset, 0))
+        with_text.paste(img._img, (offset, 0))
         draw.text((width/2-text_len/2, height - 30),
                   name, align="center", fill=(0, 0, 0), font=font)
 
