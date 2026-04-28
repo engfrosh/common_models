@@ -413,7 +413,10 @@ class DiscordChannel(models.Model):
                 return self.team.display_name
 
     def rename(self):
-        self.rename_name(self.compute_name())
+        new_name = self.compute_name()
+        if new_name == self.name:
+            return
+        self.rename_name(new_name)
 
     def rename_name(self, name: str):
         api = get_client()
