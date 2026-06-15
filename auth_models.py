@@ -28,6 +28,8 @@ class MagicLink(models.Model):
     class Meta:
         """Magic Link Meta information."""
 
+        verbose_name = "Magic Link"
+        verbose_name_plural = "Magic Links"
         permissions = [
             ("view_links", "Can view magic links"),
         ]

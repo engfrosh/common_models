@@ -12,11 +12,27 @@ class SiteImage(models.Model):
     name = models.CharField("Name", max_length=100)
     image = models.ImageField(upload_to=md.img_path, null=True)
 
+    def __str__(self):
+        return "Site Image -" + self.name
+
+    class Meta:
+        verbose_name = "Site Image"
+        verbose_name_plural = "Site Images"
+
+
 class SponsorLogo(models.Model):
     name = models.CharField("Name", max_length=100)
     image = models.ImageField(upload_to=md.img_path, null=True)
     footer = models.BooleanField(default=False)
     link = models.CharField("Link", max_length=256, null=True, blank=True)
+    
+    def __str__(self):
+        return "Sponsor Logo -" + self.name
+
+    class Meta:
+        verbose_name = "Sponsor Logo"
+        verbose_name_plural = "Sponsor Logos"
+
 
 class FAQPage(models.Model):
     id = models.AutoField("Page ID", primary_key=True)
@@ -24,6 +40,13 @@ class FAQPage(models.Model):
     body = models.TextField()
     restricted = models.ManyToManyField(Group, blank=True)
     img = models.ImageField(upload_to=md.img_path, null=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "FAQ Page"
+        verbose_name_plural = "FAQ Pages"
 
     @property
     def html_body(self):
@@ -99,6 +122,12 @@ class InclusivityPage(models.Model):
     open_time = models.DateTimeField()
     file = models.FileField(upload_to=md.inclusivity_path)
 
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Inclusivity Page"
+        verbose_name_plural = "Inclusivity Pages"
 
 class FacilShift(models.Model):
     id = models.AutoField("Shift ID", primary_key=True)
@@ -113,6 +142,9 @@ class FacilShift(models.Model):
     administrative = models.BooleanField("Administrative", blank=True, default=False)
     checkin_user = models.ForeignKey(User, null=True, blank=True, on_delete=SET_NULL)
     type = models.CharField("Type", max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
 
     class Meta:
         """Facil Shift Meta information."""
@@ -178,12 +210,21 @@ class FacilShiftSignup(models.Model):
     shift = models.ForeignKey(FacilShift, on_delete=CASCADE, related_name="signups")
     attendance = models.BooleanField(default=False)
 
+    def __str__(self):
+        return str(self.user) + " - " + str(self.shift)
+
+    class Meta:
+        verbose_name = "Facil Shift Signup"
+        verbose_name_plural = "Facil Shift Signups"
 
 class UniversityProgram(models.Model):
     """Map a role as a course program."""
 
     name = models.CharField("Program Name", max_length=64, unique=True)
     group = models.OneToOneField(Group, on_delete=CASCADE, primary_key=True)
+    
+    def __str__(self) -> str:
+        return self.name
 
     class Meta:
         """University Program Meta Information."""
@@ -191,20 +232,29 @@ class UniversityProgram(models.Model):
         verbose_name = "Program"
         verbose_name_plural = "Programs"
 
-    def __str__(self) -> str:
-        return self.name
-
 
 class RoleOption(models.Model):
     emote = models.CharField("Emote", max_length=64)
     role = models.PositiveBigIntegerField("Role id")
     message = models.PositiveBigIntegerField("Message id")
 
+    def __str__(self) -> str:
+        return self.emote
+
+    class Meta:
+        verbose_name = "Role Option"
+        verbose_name_plural = "Role Options"
 
 class PronounOption(models.Model):
     emote = models.CharField("Emote", max_length=64)
     name = models.CharField("Name", max_length=64)
 
+    def __str__(self) -> str:
+        return self.name
+
+    class Meta:
+        verbose_name = "Pronoun Option"
+        verbose_name_plural = "Pronoun Options"
 
 class Pronoun(models.Model):
     """Map a pronoun to a user"""
@@ -212,7 +262,12 @@ class Pronoun(models.Model):
     user = models.ForeignKey(User, on_delete=CASCADE)
     order = models.IntegerField()
 
+    def __str__(self):
+        return str(self.user) + " - " + self.name
+
     class Meta:
+        verbose_name = "User Pronouns"
+        verbose_name_plural = "Users' Pronouns"
         unique_together = [["user", "order"]]
 
 
@@ -381,19 +436,22 @@ class FroshRole(models.Model):
     name = models.CharField("Role Name", max_length=64, unique=True)
     group = models.OneToOneField(Group, on_delete=CASCADE, primary_key=True)
 
+    def __str__(self) -> str:
+        return self.name
+
     class Meta:
         """Frosh Role Meta information."""
 
         verbose_name = "Frosh Role"
         verbose_name_plural = "Frosh Roles"
 
-    def __str__(self) -> str:
-        return self.name
-
 
 class BooleanSetting(models.Model):
     id = models.CharField(max_length=100, primary_key=True)
     value = models.BooleanField(default=True)
+
+    def __str__(self) -> str:
+        return self.id
 
     class Meta:
         verbose_name = "Boolean Setting"
@@ -407,12 +465,22 @@ class Setting(models.Model):
     id = models.CharField(max_length=100, primary_key=True)
     value = models.CharField(max_length=255, default=None, blank=True, null=True)
 
+    def __str__(self) -> str:
+        return self.id
+
+    class Meta:
+        verbose_name = "Setting"
+        verbose_name_plural = "Settings"
+
 
 class Announcement(models.Model):
     id = models.AutoField("Announcement ID", primary_key=True)
     created = models.DateTimeField(auto_now=True)
     title = models.CharField(max_length=200)
     body = models.TextField()
+
+    def __str__(self):
+        return self.title
 
     class Meta:
         verbose_name = "Announcement"

@@ -32,6 +32,9 @@ class TeamRoom(models.Model):
     date = models.DateField()
     room = models.CharField("Room Number", max_length=64)
 
+    class Meta:
+        verbose_name = "Team Room"
+        verbose_name_plural = "Team Rooms"
 
 class Team(models.Model):
     """Model of frosh team."""

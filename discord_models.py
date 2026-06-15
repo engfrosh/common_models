@@ -492,6 +492,9 @@ class DiscordMessage(models.Model):
     type = models.CharField("Type", max_length=64)
     id = models.BigIntegerField("Channel ID", primary_key=True)
 
+    class Meta:
+        verbose_name = "Discord Message"
+        verbose_name_plural = "Discord Messages"
 
 class DiscordUser(models.Model):
     """Linking Discord user to website user."""

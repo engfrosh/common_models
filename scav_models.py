@@ -27,6 +27,10 @@ class LockoutPeriod(models.Model):
     end = models.DateTimeField()
     branch = models.ForeignKey('PuzzleStream', on_delete=CASCADE, null=True, blank=True)
 
+    class Meta:
+        verbose_name = "Lockout Period"
+        verbose_name_plural = "Lockout Periods"
+
 
 class PuzzleGuess(models.Model):
     """Stores all the guesses for scavenger."""
@@ -270,9 +274,16 @@ class QRCode(models.Model):
     puzzle = models.ForeignKey("Puzzle", on_delete=CASCADE)
     qr_code = models.ImageField(upload_to=md.scavenger_qr_code_path, blank=True, null=True)
 
+    def __str__(self):
+        return str(self.puzzle)
+
+    class Meta:
+        verbose_name = "QR Code"
+        verbose_name_plural = "QR Codes"
+
     def generate_qr_code(self, answer: str) -> None:
         url_base = md.Setting.objects.get_or_create(id="QR Code URL",
-                                                    defaults={"value": "https://time.engfrosh.com"})[0]
+                                                    defaults={"value": "https://server.engfrosh.com"})[0]
 
         qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H)
         qr.add_data(
@@ -280,7 +291,13 @@ class QRCode(models.Model):
         qr.make(fit=True)
 
         blob = BytesIO()
-        STYLE_IMAGE_PATH = "SpiritX.png"
+
+        site_image = SiteImage.objects.filter(name="QR Code Image").first()
+        if site_image and site_image.image:
+            STYLE_IMAGE_PATH = site_image.image.path
+        else:
+            STYLE_IMAGE_PATH = "engfrosh_site/SpiritX.png"  # fallback
+
         USE_IMAGE = True
         if USE_IMAGE:
             img = qr.make_image(image_factory=StyledPilImage, embeded_image_path=STYLE_IMAGE_PATH)
