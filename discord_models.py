@@ -492,6 +492,9 @@ class DiscordMessage(models.Model):
     type = models.CharField("Type", max_length=64)
     id = models.BigIntegerField("Channel ID", primary_key=True)
 
+    def __str__(self) -> str:
+        return "Message: " + self.type + " in " + str(self.channel)
+
     class Meta:
         verbose_name = "Discord Message"
         verbose_name_plural = "Discord Messages"

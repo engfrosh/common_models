@@ -104,8 +104,13 @@ class Event(models.Model):
     objects = EventManager()
 
     class Meta:
+        verbose_name = "Event"
+        verbose_name_plural = "Events"
+        """
+        Does this actually need to support localization?
         verbose_name = _("event")
         verbose_name_plural = _("events")
+        """
 
     def __str__(self):
         return self.title + ": " + str(date(self.start, django_settings.DATE_FORMAT)) + \
@@ -483,8 +488,13 @@ class EventRelation(models.Model):
     objects = EventRelationManager()
 
     class Meta:
+        verbose_name = "Event Relation"
+        verbose_name_plural = "Event Relations"
+        """
+        Ditto...
         verbose_name = _("event relation")
         verbose_name_plural = _("event relations")
+        """
 
     def __str__(self):
         return "{}({})-{}".format(

@@ -13,7 +13,7 @@ class SiteImage(models.Model):
     image = models.ImageField(upload_to=md.img_path, null=True)
 
     def __str__(self):
-        return "Site Image -" + self.name
+        return self.name
 
     class Meta:
         verbose_name = "Site Image"
@@ -27,7 +27,7 @@ class SponsorLogo(models.Model):
     link = models.CharField("Link", max_length=256, null=True, blank=True)
     
     def __str__(self):
-        return "Sponsor Logo -" + self.name
+        return self.name
 
     class Meta:
         verbose_name = "Sponsor Logo"

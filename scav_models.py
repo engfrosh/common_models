@@ -155,8 +155,8 @@ class TeamPuzzleActivity(models.Model):
 
     class Meta:
 
-        verbose_name = "Team Puzzle Activity"
-        verbose_name_plural = "Team Puzzle Activities"
+        verbose_name = "Scavenger Puzzle Attempt"
+        verbose_name_plural = "Scavenger Puzzle Attempts"
 
         unique_together = [["team", "puzzle"]]
 
@@ -292,7 +292,7 @@ class QRCode(models.Model):
 
         blob = BytesIO()
 
-        site_image = SiteImage.objects.filter(name="QR Code Image").first()
+        site_image = md.SiteImage.objects.filter(name="QR Code Image").first()
         if site_image and site_image.image:
             STYLE_IMAGE_PATH = site_image.image.path
         else:
