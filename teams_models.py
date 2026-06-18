@@ -36,6 +36,7 @@ class TeamRoom(models.Model):
         verbose_name = "Team Room"
         verbose_name_plural = "Team Rooms"
 
+
 class Team(models.Model):
     """Model of frosh team."""
 

@@ -41,6 +41,7 @@ def inclusivity_path(instance, filename):
 def img_path(instance, filename):
     return random_path(instance, filename, IMG_DIR)
 
+
 def site_img_path(instance, filename):
     base = instance.name or os.path.splitext(filename)[0]
     slug = slugify(base)[:80] or "image"
@@ -57,6 +58,7 @@ def site_img_path(instance, filename):
         if not default_storage.exists(candidate):
             return candidate
         i += 1
+
 
 def logo_path(instance, filename):
     return random_path(instance, filename, SCAVENGER_DIR + LOGO_DIR)

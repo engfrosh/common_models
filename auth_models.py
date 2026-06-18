@@ -6,7 +6,6 @@ import datetime
 from django.utils import timezone
 import qrcode
 import qrcode.constants
-import qrcode.image.svg
 import logging
 from io import BytesIO
 from django.utils.encoding import iri_to_uri

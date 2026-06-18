@@ -7,7 +7,6 @@ from typing import List, Optional, Tuple, Union
 import datetime
 import qrcode
 import qrcode.constants
-import qrcode.image.svg
 from qrcode.image.styledpil import StyledPilImage
 from django.core.files import File
 from PIL import Image, ImageDraw, ImageFont

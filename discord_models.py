@@ -341,7 +341,7 @@ class DiscordChannel(models.Model):
 
     class Meta:
         """Discord Channel Model Meta information."""
-        
+
         verbose_name = "Discord Channel"
         verbose_name_plural = "Discord Channels"
         permissions = [
@@ -495,6 +495,7 @@ class DiscordMessage(models.Model):
     class Meta:
         verbose_name = "Discord Message"
         verbose_name_plural = "Discord Messages"
+
 
 class DiscordUser(models.Model):
     """Linking Discord user to website user."""

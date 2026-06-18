@@ -25,7 +25,7 @@ class SponsorLogo(models.Model):
     image = models.ImageField(upload_to=md.img_path, null=True)
     footer = models.BooleanField(default=False)
     link = models.CharField("Link", max_length=256, null=True, blank=True)
-    
+
     def __str__(self):
         return self.name
 
@@ -224,7 +224,7 @@ class UniversityProgram(models.Model):
 
     name = models.CharField("Program Name", max_length=64, unique=True)
     group = models.OneToOneField(Group, on_delete=CASCADE, primary_key=True)
-    
+
     def __str__(self) -> str:
         return self.name
 
