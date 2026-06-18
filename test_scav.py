@@ -43,7 +43,7 @@ class ScavUnorderedTests(TestCase):
             pass
         try:
             self.assertFalse(self.test12.is_viewable_for_team(self.team1))
-        except:  # noqaL E722
+        except:  # noqa: E722
             pass
         self.assertFalse(self.test11.is_completed_for_team(self.team1))
 

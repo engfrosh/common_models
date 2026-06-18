@@ -103,6 +103,10 @@ class Event(models.Model):
     color_event = models.CharField(_("Color event"), blank=True, max_length=10)
     objects = EventManager()
 
+    def __str__(self):
+        return self.title + ": " + str(date(self.start, django_settings.DATE_FORMAT)) + \
+               " - " + str(date(self.end, django_settings.DATE_FORMAT))
+
     class Meta:
         verbose_name = "Event"
         verbose_name_plural = "Events"
@@ -111,10 +115,6 @@ class Event(models.Model):
         verbose_name = _("event")
         verbose_name_plural = _("events")
         """
-
-    def __str__(self):
-        return self.title + ": " + str(date(self.start, django_settings.DATE_FORMAT)) + \
-               " - " + str(date(self.end, django_settings.DATE_FORMAT))
 
     @property
     def seconds(self):
@@ -487,6 +487,11 @@ class EventRelation(models.Model):
 
     objects = EventRelationManager()
 
+    def __str__(self):
+        return "{}({})-{}".format(
+            self.event.title, self.distinction, self.content_object
+        )
+
     class Meta:
         verbose_name = "Event Relation"
         verbose_name_plural = "Event Relations"
@@ -495,11 +500,6 @@ class EventRelation(models.Model):
         verbose_name = _("event relation")
         verbose_name_plural = _("event relations")
         """
-
-    def __str__(self):
-        return "{}({})-{}".format(
-            self.event.title, self.distinction, self.content_object
-        )
 
 
 class Occurrence(models.Model):
@@ -764,12 +764,17 @@ class Calendar(models.Model):
     slug = models.SlugField(_("slug"), max_length=200, unique=True)
     objects = CalendarManager()
 
-    class Meta:
-        verbose_name = _("calendar")
-        verbose_name_plural = _("calendars")
-
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = "Calendar"
+        verbose_name_plural = "Calendars"
+        """
+        Ditto...
+        verbose_name = _("calendar")
+        verbose_name_plural = _("calendars")
+        """
 
     @property
     def events(self):
@@ -845,12 +850,17 @@ class CalendarRelation(models.Model):
 
     objects = CalendarRelationManager()
 
-    class Meta:
-        verbose_name = _("calendar relation")
-        verbose_name_plural = _("calendar relations")
-
     def __str__(self):
         return "{} - {}".format(self.calendar, self.content_object)
+
+    class Meta:
+        verbose_name = "Calendar relation"
+        verbose_name_plural = "Calendar relations"
+        """
+        Ditto...
+        verbose_name = _("calendar relation")
+        verbose_name_plural = _("calendar relations")
+        """
 
 
 freqs = (

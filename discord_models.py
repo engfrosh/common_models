@@ -43,12 +43,6 @@ class DiscordOverwrite(models.Model):
     allow = models.PositiveBigIntegerField("Allowed Overwrites")
     deny = models.PositiveBigIntegerField("Denied Overwrites")
 
-    class Meta:
-        """Discord Overwrite Meta Info."""
-
-        verbose_name = "Discord Permission Overwrite"
-        verbose_name_plural = "Discord Permission Overwrites"
-
     def __str__(self) -> str:
         if self.descriptive_name:
             return self.descriptive_name
@@ -60,6 +54,12 @@ class DiscordOverwrite(models.Model):
                 return f"Role Overwrite: {self.user_id}"
         else:
             return f"User Overwrite: {self.user_id}"
+
+    class Meta:
+        """Discord Overwrite Meta Info."""
+
+        verbose_name = "Discord Permission Overwrite"
+        verbose_name_plural = "Discord Permission Overwrites"
 
     @property
     def verbose(self) -> str:
@@ -94,6 +94,18 @@ class DiscordRole(models.Model):
     group_id = models.ForeignKey(Group, CASCADE)
     secondary_group_id = models.ForeignKey(Group, CASCADE, null=True, blank=True, related_name="secondary_group")
 
+    def __str__(self) -> str:
+        if self.secondary_group_id is not None:
+            return self.group_id.name + " - " + self.secondary_group_id.name
+        else:
+            return self.group_id.name
+
+    class Meta:
+        """Meta information for Discord roles."""
+
+        verbose_name = "Discord Role"
+        verbose_name_plural = "Discord Roles"
+
     @property
     def group(self) -> Group:
         return self.group_id
@@ -112,18 +124,6 @@ class DiscordRole(models.Model):
         guild = DiscordGuild.objects.all().first()
         client.rename_role(guild.id, self.role_id, self.compute_name())
 
-    class Meta:
-        """Meta information for Discord roles."""
-
-        verbose_name = "Discord Role"
-        verbose_name_plural = "Discord Roles"
-
-    def __str__(self) -> str:
-        if self.secondary_group_id is not None:
-            return self.group_id.name + " - " + self.secondary_group_id.name
-        else:
-            return self.group_id.name
-
 
 class ChannelTag(models.Model):
     """Tags classifying Discord Channels."""
@@ -131,14 +131,14 @@ class ChannelTag(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField("Tag Name", max_length=64, unique=True)
 
+    def __str__(self) -> str:
+        return self.name
+
     class Meta:
         """ChannelTag Meta information."""
 
         verbose_name = "Channel Tag"
         verbose_name_plural = "Channel Tags"
-
-    def __str__(self) -> str:
-        return self.name
 
     def lock(self):
         """Lock the channel."""
@@ -165,8 +165,13 @@ class DiscordGuild(models.Model):
         else:
             super().__init__(*args, **kwargs)
 
-    class Meta:
+    def __str__(self) -> str:
+        if self.deleted:
+            return f"{self.name} [DELETED]"
+        else:
+            return f"{self.name}"
 
+    class Meta:
         verbose_name = "Discord Guild"
         verbose_name_plural = "Discord Guilds"
         permissions = [
@@ -174,12 +179,6 @@ class DiscordGuild(models.Model):
             ("create_channel", "Allows a user to create discord channels"),
             ("spirit_on_duty", "Allows a user to mark themselves as the spirit on duty")
         ]
-
-    def __str__(self) -> str:
-        if self.deleted:
-            return f"{self.name} [DELETED]"
-        else:
-            return f"{self.name}"
 
     def __repr__(self) -> str:
         if self.deleted:
@@ -325,17 +324,6 @@ class DiscordChannel(models.Model):
     unlocked_overwrites = models.ManyToManyField(
         DiscordOverwrite, related_name="unlocked_channel_overwrites", blank=True)
 
-    class Meta:
-        """Discord Channel Model Meta information."""
-
-        permissions = [
-            ("lock_channels", "Can lock or unlock discord channels."),
-            ("purge_channels", "Can purge a discord channel of all messages")
-        ]
-
-        verbose_name = "Discord Channel"
-        verbose_name_plural = "Discord Channels"
-
     def __str__(self) -> str:
         if self.name:
             name = self.name
@@ -350,6 +338,16 @@ class DiscordChannel(models.Model):
             return f"CATEGORY: {name}"
         else:
             return name
+
+    class Meta:
+        """Discord Channel Model Meta information."""
+        
+        verbose_name = "Discord Channel"
+        verbose_name_plural = "Discord Channels"
+        permissions = [
+            ("lock_channels", "Can lock or unlock discord channels."),
+            ("purge_channels", "Can purge a discord channel of all messages")
+        ]
 
     @property
     def overwrites(self) -> List[DiscordOverwrite]:
@@ -480,12 +478,11 @@ class RoleInvite(models.Model):
     class Meta:
         """Discord Role Invite Model Meta information."""
 
+        verbose_name = "Role Invite"
+        verbose_name_plural = "Role Invites"
         permissions = [
             ("create_invite", "Can create invites to the discord server")
         ]
-
-        verbose_name = "Role Invite"
-        verbose_name_plural = "Role Invites"
 
 
 class DiscordMessage(models.Model):
@@ -510,6 +507,9 @@ class DiscordUser(models.Model):
     expiry = models.DateTimeField(blank=True, null=True)
     refresh_token = models.CharField(max_length=100, blank=True)
 
+    def __str__(self) -> str:
+        return f"{self.discord_username}#{self.discriminator}"
+
     class Meta:
         """Meta information for Discord Users."""
 
@@ -519,9 +519,6 @@ class DiscordUser(models.Model):
             ("view_discord_nicks", "Can view Discord info for users"),
             ("manage_discord_nicks", "Can manage Discord info for users")
         ]
-
-    def __str__(self) -> str:
-        return f"{self.discord_username}#{self.discriminator}"
 
     def set_tokens(self, access_token, expires_in, refresh_token):
         """Set the user's discord tokens."""

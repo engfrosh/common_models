@@ -10,7 +10,7 @@ import string
 
 class SiteImage(models.Model):
     name = models.CharField("Name", max_length=100)
-    image = models.ImageField(upload_to=md.img_path, null=True)
+    image = models.ImageField(upload_to=md.site_img_path, null=True)
 
     def __str__(self):
         return self.name
@@ -129,6 +129,7 @@ class InclusivityPage(models.Model):
         verbose_name = "Inclusivity Page"
         verbose_name_plural = "Inclusivity Pages"
 
+
 class FacilShift(models.Model):
     id = models.AutoField("Shift ID", primary_key=True)
     name = models.CharField("Name", max_length=128)
@@ -217,6 +218,7 @@ class FacilShiftSignup(models.Model):
         verbose_name = "Facil Shift Signup"
         verbose_name_plural = "Facil Shift Signups"
 
+
 class UniversityProgram(models.Model):
     """Map a role as a course program."""
 
@@ -245,6 +247,7 @@ class RoleOption(models.Model):
         verbose_name = "Role Option"
         verbose_name_plural = "Role Options"
 
+
 class PronounOption(models.Model):
     emote = models.CharField("Emote", max_length=64)
     name = models.CharField("Name", max_length=64)
@@ -255,6 +258,7 @@ class PronounOption(models.Model):
     class Meta:
         verbose_name = "Pronoun Option"
         verbose_name_plural = "Pronoun Options"
+
 
 class Pronoun(models.Model):
     """Map a pronoun to a user"""
@@ -299,6 +303,9 @@ class UserDetails(models.Model):
 
     charter = models.FileField(upload_to='charter/', null=True, blank=True)
 
+    def __str__(self) -> str:
+        return f"{self.name} ({self.user.username})"
+
     class Meta:
         """User Details Meta information."""
 
@@ -308,9 +315,6 @@ class UserDetails(models.Model):
             ("check_in", "Can manage user check in"),
             ("frosh_list", "Can access frosh list")
         ]
-
-    def __str__(self) -> str:
-        return f"{self.name} ({self.user.username})"
 
     @property
     def role(self) -> str:
@@ -451,14 +455,11 @@ class BooleanSetting(models.Model):
     value = models.BooleanField(default=True)
 
     def __str__(self) -> str:
-        return self.id
+        return f"<Setting {self.id}: {self.value} >"
 
     class Meta:
         verbose_name = "Boolean Setting"
         verbose_name_plural = "Boolean Settings"
-
-    def __str__(self) -> str:
-        return f"<Setting {self.id}: {self.value} >"
 
 
 class Setting(models.Model):

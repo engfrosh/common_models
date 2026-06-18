@@ -17,6 +17,8 @@ from typing import Optional
 from common_models.common_models_setup import init_django  # noqa: E402
 init_django()
 from django.utils import timezone  # noqa: E402
+from django.utils.text import slugify # noqa: E402
+from django.core.files.storage import default_storage # noqa: E402
 # This function is above the imports as its needed by some of the modules it imports
 
 
@@ -39,6 +41,22 @@ def inclusivity_path(instance, filename):
 def img_path(instance, filename):
     return random_path(instance, filename, IMG_DIR)
 
+def site_img_path(instance, filename):
+    base = instance.name or os.path.splitext(filename)[0]
+    slug = slugify(base)[:80] or "image"
+    ext = os.path.splitext(filename)[1].lower() or ".png"
+
+    candidate = os.path.join("/site-images", f"{slug}{ext}")
+
+    if not default_storage.exists(candidate):
+        return candidate
+
+    i = 1
+    while True:
+        candidate = os.path.join(IMG_DIR, f"{slug}-{i}{ext}")
+        if not default_storage.exists(candidate):
+            return candidate
+        i += 1
 
 def logo_path(instance, filename):
     return random_path(instance, filename, SCAVENGER_DIR + LOGO_DIR)
