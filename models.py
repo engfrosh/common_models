@@ -47,7 +47,7 @@ def site_img_path(instance, filename):
     slug = slugify(base)[:80] or "image"
     ext = os.path.splitext(filename)[1].lower() or ".png"
 
-    candidate = os.path.join("site-images/", f"{slug}{ext}")
+    candidate = os.path.join("site_images/", f"{slug}{ext}")
 
     if not default_storage.exists(candidate):
         return candidate
