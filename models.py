@@ -16,9 +16,9 @@ from typing import Optional
 
 from common_models.common_models_setup import init_django  # noqa: E402
 init_django()
-from django.utils import timezone  # noqa: E402
-from django.utils.text import slugify # noqa: E402
-from django.core.files.storage import default_storage # noqa: E402
+from django.utils import timezone   # noqa: E402
+from django.utils.text import slugify  # noqa: E402
+from django.core.files.storage import default_storage  # noqa: E402
 # This function is above the imports as its needed by some of the modules it imports
 
 

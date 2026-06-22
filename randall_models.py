@@ -10,6 +10,7 @@ class RandallBooking(models.Model):
     end = models.DateTimeField()
     message = models.TextField()
     approved = models.BooleanField(default=False)
+
     class Meta:
         permissions = [
             ("book_randall", "Can create bookings"),
