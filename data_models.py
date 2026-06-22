@@ -455,7 +455,7 @@ class BooleanSetting(models.Model):
     value = models.BooleanField(default=True)
 
     def __str__(self) -> str:
-        return f"<Setting {self.id}: {self.value} >"
+        return f"{self.id}: {self.value}"
 
     class Meta:
         verbose_name = "Boolean Setting"

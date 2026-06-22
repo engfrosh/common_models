@@ -136,6 +136,7 @@ admin.site.register(LockoutPeriod, LockoutPeriodAdmin)
 class BooleanSettingAdmin(admin.ModelAdmin):
 
     readonly_fields: Sequence[str] = ("id",)
+    fields = ("id", "value")
     list_display = ("id", "value")
     actions = [
         "set_value_to_false",
