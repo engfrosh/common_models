@@ -9,7 +9,7 @@ from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite
     TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
     UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild, Announcement, \
     InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, \
-    Setting, LockoutPeriod, FAQPage, QRCode, RoleOption, SiteImage, TeamRoom, Event, \
+    Setting, LockoutPeriod, FAQPage, QRCode, RoleOption, SiteImage, SiteSVG, TeamRoom, Event, \
     Calendar, CalendarRelation, EventRelation, Pronoun, PronounOption, DiscordMessage, \
     RandallBooking, RandallBlocked, RandallLocation, SponsorLogo
 
@@ -103,6 +103,13 @@ class SiteImageAdmin(admin.ModelAdmin):
 
 
 admin.site.register(SiteImage, SiteImageAdmin)
+
+
+class SiteSVGAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+
+
+admin.site.register(SiteSVG, SiteSVGAdmin)
 
 
 class RoleOptionAdmin(admin.ModelAdmin):
