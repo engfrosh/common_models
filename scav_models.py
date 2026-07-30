@@ -344,9 +344,9 @@ class Puzzle(models.Model):
     puzzle_text = models.CharField("Text", blank=True, max_length=2000)
     puzzle_file = models.FileField(upload_to=md.puzzle_path, blank=True)
     puzzle_file_display_filename = models.CharField(max_length=256, blank=True)
-    puzzle_file_download = models.BooleanField(default=False)
-    puzzle_file_is_image = models.BooleanField(default=False)
-    puzzle_is_link = models.BooleanField(default=False)
+    puzzle_file_download = models.BooleanField(default=False, help_text="Creates a button to download the puzzle file. Uses the display filename when downloading.")  # noqa: E501
+    puzzle_file_is_image = models.BooleanField(default=False, help_text="Inline the puzzle file as an image. If not set, creates a 'see puzzle' button that opens the file in a new tab")  # noqa: E501
+    puzzle_is_link = models.BooleanField(default=False, help_text="Renders the puzzle text as a clickable link")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
