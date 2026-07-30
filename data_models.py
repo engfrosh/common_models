@@ -19,6 +19,7 @@ class SiteImage(models.Model):
         verbose_name = "Site Image"
         verbose_name_plural = "Site Images"
 
+
 class SiteSVG(models.Model):
     name = models.CharField("Name", max_length=100)
     image = models.FileField(upload_to=md.site_img_path, null=True)
