@@ -52,7 +52,7 @@ class PuzzleStream(models.Model):
     default = models.BooleanField(default=True)
     locked = models.BooleanField(default=False)
     online = models.BooleanField(default=False)
-    active_icon = models.ForeignKey('SiteSVG', on_delete=models.SET_NULL, null=True, blank=True, related_name='streams_using_active_icon') 
+    active_icon = models.ForeignKey('common_models.SiteSVG', on_delete=models.SET_NULL, null=True, blank=True, related_name='streams_using_active_icon') 
 
     def __str__(self) -> str:
         return f"{self.name}"
