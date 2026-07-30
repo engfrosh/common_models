@@ -352,7 +352,7 @@ class Puzzle(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     stream_branch = models.ForeignKey(PuzzleStream, on_delete=CASCADE, null=True, blank=True, default=None, related_name='branch_puzzle', verbose_name="New branch to start")  # noqa: E501
-    stream_puzzle = models.ForeignKey("Puzzle", on_delete=SET_NULL, blank=True, null=True, related_name='puzzle_opener', verbose_name="Stream puzzle", verbose_name="New branch first puzzle")  # noqa: E501
+    stream_puzzle = models.ForeignKey("Puzzle", on_delete=SET_NULL, blank=True, null=True, related_name='puzzle_opener', verbose_name="New branch first puzzle")  # noqa: E501
     # teams = models.ManyToManyField(Team, through="TeamPuzzleActivity")
 
     class Meta:
