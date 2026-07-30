@@ -316,7 +316,7 @@ admin.site.register(DiscordUser, DiscordUserAdmin)
 
 
 class PuzzleStreamAdmin(admin.ModelAdmin):
-    list_display = ("name", "enabled", "locked")
+    list_display = ("name", "enabled", "locked", "active_icon")
 
 
 admin.site.register(PuzzleStream, PuzzleStreamAdmin)
