@@ -490,7 +490,7 @@ class DiscordMessage(models.Model):
 
     def __str__(self) -> str:
         if self.channel is None:
-            channel = "No channel"
+            self.channel = "No channel"
         return "Message: " + self.type + " in " + str(self.channel)
 
     class Meta:
