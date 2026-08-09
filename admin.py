@@ -6,9 +6,9 @@ from django.contrib import admin
 
 from .models import BooleanSetting, ChannelTag, DiscordChannel, DiscordOverwrite, DiscordRole, \
     FroshRole, Puzzle, PuzzleGuess, PuzzleStream, Team, DiscordUser, MagicLink, \
-    TeamPuzzleActivity, TeamTradeUpActivity, UniversityProgram, \
-    UserDetails, VerificationPhoto, VirtualTeam, DiscordGuild, Announcement, \
-    InclusivityPage, FacilShift, FacilShiftSignup, RoleInvite, \
+    TeamPuzzleActivity, TeamTradeUpActivity, \
+    UserDetails, VerificationPhoto, DiscordGuild, Announcement, \
+    InclusivityPage, FacilShift, FacilShiftSignup, \
     Setting, LockoutPeriod, FAQPage, QRCode, RoleOption, SiteImage, SiteSVG, TeamRoom, Event, \
     Calendar, CalendarRelation, EventRelation, Pronoun, PronounOption, DiscordMessage, \
     RandallBooking, RandallBlocked, RandallLocation, SponsorLogo
@@ -174,13 +174,6 @@ class SettingAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Setting, SettingAdmin)
-
-
-class RoleInviteAdmin(admin.ModelAdmin):
-    search_fields = ('user__username', 'link')
-
-
-admin.site.register(RoleInvite, RoleInviteAdmin)
 
 
 class InclusivityPageAdmin(admin.ModelAdmin):
@@ -465,7 +458,7 @@ admin.site.register(Puzzle, PuzzleAdmin)
 admin.site.register(Team, TeamAdmin)
 admin.site.register(MagicLink, MagicLinkAdmin)
 
-admin.site.register([FroshRole, UniversityProgram, VirtualTeam])
+admin.site.register(FroshRole)
 
 
 class UserDetailsAdmin(admin.ModelAdmin):
