@@ -489,6 +489,8 @@ class DiscordMessage(models.Model):
     id = models.BigIntegerField("Channel ID", primary_key=True)
 
     def __str__(self) -> str:
+        if self.channel is None:
+            channel = "No channel"
         return "Message: " + self.type + " in " + str(self.channel)
 
     class Meta:
