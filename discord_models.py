@@ -403,10 +403,9 @@ class DiscordChannel(models.Model):
             return self.name
         else:
             if self.type == 0:
-                tags = ""
-                for t in self.tags.all():
-                    tags += "-" + t.name
-                return self.team.discord_name + tags
+                tags = [t.name for t in self.tags.all()]
+                tags.append(self.team.discord_name)
+                return "-".join(tags)
             elif self.type == 4:
                 return self.team.display_name
 
