@@ -295,7 +295,7 @@ class QRCode(models.Model):
         if site_image and site_image.image:
             STYLE_IMAGE_PATH = site_image.image.path
         else:
-            STYLE_IMAGE_PATH = "engfrosh_site/SpiritX.png"  # fallback
+            STYLE_IMAGE_PATH = "SpiritX.png"  # fallback
 
         USE_IMAGE = True
         if USE_IMAGE:
