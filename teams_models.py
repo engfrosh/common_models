@@ -259,7 +259,8 @@ class Team(models.Model):
         """Returns a bool if trade up is enabled for the team."""
 
         return md.BooleanSetting.objects.get_or_create(
-            id="TRADE_UP_ENABLED")[0].value and self.trade_up_enabled_for_team and self.trade_up_team
+            id="TRADE_UP_ENABLED")[0].value and self.trade_up_enabled_for_team and \
+            self.trade_up_team and not self.scavenger_locked
 
     def enable_scavenger_for_team(self) -> None:
 
